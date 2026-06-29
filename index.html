@@ -144,10 +144,11 @@
   <div id="app-shell" class="hidden h-screen flex flex-col">
     <header class="flex-none flex items-center justify-between px-4 h-12" style="background: #13161D; border-bottom: 1px solid #222636;">
       <div class="flex items-center gap-3">
-        <div class="flex items-center gap-2 cursor-pointer" onclick="goToLanding()">
+        <button class="flex items-center gap-2 px-2 py-1 -ml-2 rounded-md transition-all hover:bg-white/5" onclick="goToLanding()">
+          <i class="fa-solid fa-chevron-left text-dark-text text-[10px]"></i>
           <i class="fa-solid fa-building text-accent text-sm"></i>
           <span class="font-display font-semibold text-dark-heading text-sm">BIM Academy</span>
-        </div>
+        </button>
         <div class="w-px h-5" style="background: #222636;"></div>
         <span class="text-xs text-dark-text font-medium" id="chapter-title">Chapter 1 — First Room</span>
       </div>
@@ -1041,7 +1042,7 @@
     function renderTabs() {
       const ch = CHAPTERS[currentChapter], st = cState();
       const bar = document.getElementById('tab-bar');
-      bar.innerHTML = ch.tabs.map((tab, i) => {
+      let html = ch.tabs.map((tab, i) => {
         const num = i + 1;
         const isActive = currentLesson === num;
         const isDone = st.completed[i];
@@ -1057,6 +1058,19 @@
           ${tab.label}
         </button>`;
       }).join('');
+
+      // Show "Next Chapter" button when all lessons in current chapter are done
+      if (st.completed.every(Boolean)) {
+        const nextCh = currentChapter + 1;
+        if (CHAPTERS[nextCh]) {
+          html += `<div class="w-px h-5 mx-1" style="background: #222636;"></div>`;
+          html += `<button class="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold border border-transparent transition-all hover:scale-[1.02]" style="background: #F5620F; color: white;" onclick="startChapter(${nextCh})">
+            Chapter ${nextCh} <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </button>`;
+        }
+      }
+
+      bar.innerHTML = html;
     }
 
     // ── Lesson Navigation ─────────────────────────────────────────
