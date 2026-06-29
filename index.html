@@ -311,7 +311,7 @@
           1: 'Click to place the start point of your wall',
           2: 'Click to place the start point of your wall',
           3: 'Click to start placing the first closing wall (any order)',
-          4: 'Click on or near a wall to place a door',
+          4: 'Hover over a wall and click to place the door',
           5: 'Place wall 1 of 4 — click to set the start point'
         }
       },
@@ -323,12 +323,12 @@
           { label: 'Place Window at Offset' }
         ],
         objectives: {
-          1: 'Place a window on the <strong class="text-dark-heading">bottom wall (0,0)→(3000,0)</strong>. Click on the wall to host the window. It will snap to the wall face at <strong class="text-dark-heading">900 mm sill height</strong>.',
-          2: 'Place a window on the <strong class="text-dark-heading">right wall (3000,0)→(3000,3000)</strong> at position <strong class="text-dark-heading">600 mm from the bottom-right corner</strong>. Use the measurement feedback to hit the target offset.'
+          1: 'Hover over a wall to highlight it, then <strong class="text-dark-heading">click to place a window</strong>. The window will snap to the wall face automatically at <strong class="text-dark-heading">900 mm sill height</strong>.',
+          2: 'Place a window on a <strong class="text-dark-heading">different wall</strong> this time. Try to position it <strong class="text-dark-heading">near the corner</strong> of the wall. Watch the ghost preview as you move your cursor.'
         },
         instructions: {
-          1: 'Click on the bottom wall (0,0)→(3000,0) to place a window',
-          2: 'Click on the right wall (3000,0)→(3000,3000) — aim for 600mm from the corner'
+          1: 'Hover over a wall — it highlights orange. Click to place the window',
+          2: 'Hover over a different wall and click to place the window near a corner'
         }
       }
     };
@@ -453,6 +453,16 @@
       const p = getGroundPoint(e);
       if (p) { const n = nearEndpoint(p); cursorIndicator.position.set(p.x, 0.02, p.z); cursorIndicator.visible = true; cursorMat.color.setHex(n ? 0x34D399 : 0xF5620F); document.getElementById('cursor-pos').textContent = `(${Math.round(p.x*1000)}, ${Math.round(p.z*1000)})${n ? ' ⊕' : ''}`; }
       else cursorIndicator.visible = false;
+
+      // Wall hover + ghost preview for window/door placement modes
+      if (isWallHostMode()) {
+        const hit = raycastWalls(e);
+        updateWallHover(hit);
+        updateGhostPreview(hit);
+      } else {
+        clearWallHover();
+        clearGhostPreview();
+      }
     }
     const SNAP_THRESHOLD = 0.25;
     function snapToEndpoint(point) {
@@ -465,6 +475,102 @@
       for (const w of placedElements.filter(el => el.userData?.type === 'wall'))
         for (const ep of [w.userData.start, w.userData.end]) if (Math.sqrt((point.x-ep.x)**2+(point.z-ep.z)**2) < 0.4) return true;
       return false;
+    }
+
+    // ── Wall-Face Raycasting & Hover ────────────────────────────
+    let hoveredWall = null;
+    let hoveredWallOrigColor = null;
+    let ghostPreviewMesh = null;
+
+    function isWallHostMode() {
+      if (currentChapter === 2) return true;
+      if (currentChapter === 1 && currentLesson === 4 && l4Phase === 'door') return true;
+      if (currentChapter === 1 && currentLesson === 5 && l5Phase === 'door') return true;
+      return false;
+    }
+
+    function raycastWalls(e) {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+
+      const wallMeshes = placedElements.filter(el => el.userData?.type === 'wall');
+      const hits = raycaster.intersectObjects(wallMeshes);
+      if (hits.length === 0) return null;
+
+      const hitWall = hits[0].object;
+      const hitPoint = hits[0].point;
+      const ws = hitWall.userData.start, we = hitWall.userData.end;
+      const dx = we.x - ws.x, dz = we.z - ws.z;
+      const lenSq = dx * dx + dz * dz;
+      let t = lenSq > 0.001 ? Math.max(0.1, Math.min(0.9, ((hitPoint.x - ws.x) * dx + (hitPoint.z - ws.z) * dz) / lenSq)) : 0.5;
+      const projPos = new THREE.Vector3(ws.x + t * dx, 0, ws.z + t * dz);
+      const wallAngle = Math.atan2(dz, dx);
+
+      return { wall: hitWall, position: projPos, wallAngle, t, hitPoint };
+    }
+
+    function updateWallHover(hit) {
+      if (hoveredWall && (!hit || hit.wall !== hoveredWall)) {
+        hoveredWall.material.color.setHex(hoveredWallOrigColor);
+        hoveredWall = null;
+      }
+      if (hit && hit.wall !== hoveredWall) {
+        hoveredWall = hit.wall;
+        hoveredWallOrigColor = hoveredWall.material.color.getHex();
+        hoveredWall.material.color.setHex(0xF5620F);
+      }
+    }
+
+    function clearWallHover() {
+      if (hoveredWall) {
+        hoveredWall.material.color.setHex(hoveredWallOrigColor);
+        hoveredWall = null;
+      }
+    }
+
+    function updateGhostPreview(hit) {
+      if (!hit) { clearGhostPreview(); return; }
+
+      if (!ghostPreviewMesh) {
+        const isWindow = currentChapter === 2;
+        if (isWindow) {
+          ghostPreviewMesh = new THREE.Group();
+          const frame = new THREE.Mesh(
+            new THREE.BoxGeometry(WINDOW_WIDTH + 0.06, WINDOW_HEIGHT + 0.06, WALL_THICKNESS + 0.06),
+            new THREE.MeshStandardMaterial({ color: 0xF5620F, transparent: true, opacity: 0.3 })
+          );
+          frame.position.y = SILL_HEIGHT + WINDOW_HEIGHT / 2;
+          ghostPreviewMesh.add(frame);
+          const glass = new THREE.Mesh(
+            new THREE.BoxGeometry(WINDOW_WIDTH - 0.06, WINDOW_HEIGHT - 0.06, 0.02),
+            new THREE.MeshStandardMaterial({ color: 0x88CCFF, transparent: true, opacity: 0.2 })
+          );
+          glass.position.y = SILL_HEIGHT + WINDOW_HEIGHT / 2;
+          ghostPreviewMesh.add(glass);
+        } else {
+          ghostPreviewMesh = new THREE.Group();
+          const frame = new THREE.Mesh(
+            new THREE.BoxGeometry(0.9 + 0.1, 2.1 + 0.05, WALL_THICKNESS + 0.06),
+            new THREE.MeshStandardMaterial({ color: 0xF5620F, transparent: true, opacity: 0.3 })
+          );
+          frame.position.y = 2.1 / 2;
+          ghostPreviewMesh.add(frame);
+        }
+        scene.add(ghostPreviewMesh);
+      }
+
+      ghostPreviewMesh.position.copy(hit.position);
+      ghostPreviewMesh.rotation.y = -hit.wallAngle;
+      ghostPreviewMesh.visible = true;
+    }
+
+    function clearGhostPreview() {
+      if (ghostPreviewMesh) {
+        scene.remove(ghostPreviewMesh);
+        ghostPreviewMesh = null;
+      }
     }
 
     // ── Wall Creation ─────────────────────────────────────────────
@@ -580,14 +686,25 @@
     // ── Interaction Handler ───────────────────────────────────────
     canvas.addEventListener('click', (e) => {
       if (isOrbiting || isPanning || e.shiftKey || e.altKey) return;
+
+      // Wall-hosted placement uses wall raycasting
+      if (isWallHostMode()) {
+        const hit = raycastWalls(e);
+        if (!hit) { updateInstruction('Hover over a wall and click to place'); return; }
+        clearGhostPreview();
+        clearWallHover();
+        if (currentChapter === 2) { handleWindowPlacement(hit); return; }
+        if (currentChapter === 1 && currentLesson === 4) { handleDoorFromWallHit(hit); return; }
+        if (currentChapter === 1 && currentLesson === 5 && l5Phase === 'door') { handleDoorFromWallHit(hit); return; }
+        return;
+      }
+
       const p = getGroundPoint(e);
       if (!p) return;
       if (currentChapter === 1) {
         if (currentLesson >= 1 && currentLesson <= 3) handleWallPlacement(p);
-        else if (currentLesson === 4) handleLesson4(p);
+        else if (currentLesson === 4 && l4Phase === 'roof') handleRoofClick(p);
         else if (currentLesson === 5) handleLesson5(p);
-      } else if (currentChapter === 2) {
-        handleWindowPlacement(p);
       }
     });
 
@@ -614,17 +731,8 @@
       }
     }
 
-    function handleLesson4(p) {
-      if (l4Phase === 'door') {
-        const n = findNearestWall(p);
-        if (!n.wall || n.distance > 0.8) { updateInstruction('Click closer to a wall to place the door'); setStatus('No wall nearby'); return; }
-        const ws = n.wall.userData.start, we = n.wall.userData.end;
-        const door = createDoorMesh(n.point, Math.atan2(we.z-ws.z, we.x-ws.x));
-        scene.add(door); placedElements.push(door); doorPlacedInL4 = true; l4Phase = 'roof';
-        updateElementsList(); document.getElementById('l4-phase-label').textContent = 'Sketch Roof (0/4)';
-        updateInstruction('Click 4 corners to define the roof boundary'); setStatus('Door placed — sketch roof'); showRoofGuides();
-      } else if (l4Phase === 'roof') handleRoofClick(p);
-    }
+    // L4 door phase is now handled via wall raycasting in the click handler.
+    // Only the roof phase still uses ground-plane clicks.
 
     function handleLesson5(p) {
       if (l5Phase === 'walls') {
@@ -641,14 +749,7 @@
             else { updateInstruction(`Wall ${l5WallsPlaced}/${L5_REQUIRED_WALLS}. Place the next wall`); setStatus(`${l5WallsPlaced}/${L5_REQUIRED_WALLS} walls`); }
           }
         }
-      } else if (l5Phase === 'door') {
-        const n = findNearestWall(p);
-        if (!n.wall || n.distance > 0.8) { updateInstruction('Click closer to a wall'); return; }
-        const ws = n.wall.userData.start, we = n.wall.userData.end;
-        const door = createDoorMesh(n.point, Math.atan2(we.z-ws.z, we.x-ws.x));
-        scene.add(door); placedElements.push(door); l5Elements.push(door); updateElementsList();
-        l5Phase = 'roof'; document.getElementById('l5-progress-label').textContent = 'Sketch roof (0/4)';
-        updateInstruction('Door placed. Click 4 corners for the roof'); setStatus('Sketch roof');
+      // L5 door phase is handled via wall raycasting in the click handler.
       } else if (l5Phase === 'roof') handleRoofClick(p);
     }
 
@@ -658,21 +759,28 @@
       2: { wallIdx: 2, wall: { a: [3,0], b: [3,3] }, targetPos: [3, 0.6], targetWallName: 'right wall (3000,0)→(3000,3000)', offsetMM: 600 }
     };
 
-    function handleWindowPlacement(p) {
-      const n = findNearestWall(p);
-      if (!n.wall || n.distance > 0.8) {
-        const targetWall = CH2_TARGETS[currentLesson].targetWallName;
-        updateInstruction(`Click on the ${targetWall} to place the window`);
-        setStatus('Click on a wall');
-        return;
-      }
-      const ws = n.wall.userData.start, we = n.wall.userData.end;
-      const wallAngle = Math.atan2(we.z - ws.z, we.x - ws.x);
-      const win = createWindowMesh(n.point, wallAngle);
+    function handleWindowPlacement(hit) {
+      const win = createWindowMesh(hit.position, hit.wallAngle);
       scene.add(win);
       placedElements.push(win);
       updateElementsList();
       scoreAndComplete();
+    }
+
+    function handleDoorFromWallHit(hit) {
+      const door = createDoorMesh(hit.position, hit.wallAngle);
+      scene.add(door); placedElements.push(door);
+      if (currentLesson === 4) {
+        doorPlacedInL4 = true; l4Phase = 'roof';
+        updateElementsList();
+        document.getElementById('l4-phase-label').textContent = 'Sketch Roof (0/4)';
+        updateInstruction('Door placed. Click 4 corners to sketch the roof boundary');
+        setStatus('Door placed — sketch roof'); showRoofGuides();
+      } else if (currentLesson === 5) {
+        l5Elements.push(door); updateElementsList();
+        l5Phase = 'roof'; document.getElementById('l5-progress-label').textContent = 'Sketch roof (0/4)';
+        updateInstruction('Door placed. Click 4 corners for the roof'); setStatus('Sketch roof');
+      }
     }
 
     function handleRoofClick(p) {
@@ -1082,6 +1190,7 @@
       hideResults(); currentLesson = num;
       wallStartPoint = null;
       if (wallPreviewMesh) { scene.remove(wallPreviewMesh); wallPreviewMesh = null; }
+      clearGhostPreview(); clearWallHover();
       document.getElementById('prop-length').style.display = 'none';
       document.getElementById('prop-l3-count').style.display = 'none';
       document.getElementById('prop-l4-phase').style.display = 'none';
