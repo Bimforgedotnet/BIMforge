@@ -304,7 +304,7 @@
           1: 'Place a wall along the X-axis from <strong class="text-dark-heading">(0, 0)</strong> to <strong class="text-dark-heading">(3000, 0)</strong>. Two clicks: start point, then end point.',
           2: 'Place a wall along the Z-axis from <strong class="text-dark-heading">(0, 0)</strong> to <strong class="text-dark-heading">(0, 3000)</strong>. Match the target exactly.',
           3: 'Place <strong class="text-dark-heading">2 walls</strong> to close the room. You need:<br>• <strong class="text-dark-heading">(3000, 0) → (3000, 3000)</strong><br>• <strong class="text-dark-heading">(0, 3000) → (3000, 3000)</strong><br>Place them in any order.',
-          4: '<strong class="text-dark-heading">Phase 1:</strong> Click to place a door on a wall.<br><strong class="text-dark-heading">Phase 2:</strong> Click 4 corners to sketch the roof boundary.',
+          4: '<strong class="text-dark-heading">Phase 1:</strong> Click to place a door on a wall.<br><strong class="text-dark-heading">Phase 2:</strong> Click the 4 top corners of the walls to sketch the roof boundary.',
           5: '<strong class="text-accent"><i class="fa-solid fa-star"></i> Final Challenge</strong><br>Build the complete room from scratch with <strong class="text-dark-heading">no guides</strong>.<br>Place 4 walls → door → roof. Score 80%+ to pass.'
         },
         instructions: {
@@ -457,10 +457,8 @@
       // Wall hover + ghost preview for window/door placement modes
       if (isWallHostMode()) {
         const hit = raycastWalls(e);
-        updateWallHover(hit);
         updateGhostPreview(hit);
       } else {
-        clearWallHover();
         clearGhostPreview();
       }
     }
@@ -478,8 +476,6 @@
     }
 
     // ── Wall-Face Raycasting & Hover ────────────────────────────
-    let hoveredWall = null;
-    let hoveredWallOrigColor = null;
     let ghostPreviewMesh = null;
 
     function isWallHostMode() {
@@ -511,23 +507,7 @@
       return { wall: hitWall, position: projPos, wallAngle, t, hitPoint };
     }
 
-    function updateWallHover(hit) {
-      if (hoveredWall && (!hit || hit.wall !== hoveredWall)) {
-        hoveredWall.material.emissive.setHex(0x000000);
-        hoveredWall = null;
-      }
-      if (hit && hit.wall !== hoveredWall) {
-        hoveredWall = hit.wall;
-        hoveredWall.material.emissive.setHex(0x332200);
-      }
-    }
-
-    function clearWallHover() {
-      if (hoveredWall) {
-        hoveredWall.material.emissive.setHex(0x000000);
-        hoveredWall = null;
-      }
-    }
+    // Wall hover removed — ghost preview is the sole placement indicator
 
     function updateGhostPreview(hit) {
       if (!hit) { clearGhostPreview(); return; }
@@ -538,13 +518,13 @@
           ghostPreviewMesh = new THREE.Group();
           const frame = new THREE.Mesh(
             new THREE.BoxGeometry(WINDOW_WIDTH + 0.06, WINDOW_HEIGHT + 0.06, WALL_THICKNESS + 0.06),
-            new THREE.MeshStandardMaterial({ color: 0xF5620F, transparent: true, opacity: 0.3 })
+            new THREE.MeshStandardMaterial({ color: 0xF5620F, transparent: true, opacity: 0.45 })
           );
           frame.position.y = SILL_HEIGHT + WINDOW_HEIGHT / 2;
           ghostPreviewMesh.add(frame);
           const glass = new THREE.Mesh(
             new THREE.BoxGeometry(WINDOW_WIDTH - 0.06, WINDOW_HEIGHT - 0.06, 0.02),
-            new THREE.MeshStandardMaterial({ color: 0x88CCFF, transparent: true, opacity: 0.2 })
+            new THREE.MeshStandardMaterial({ color: 0x88CCFF, transparent: true, opacity: 0.3 })
           );
           glass.position.y = SILL_HEIGHT + WINDOW_HEIGHT / 2;
           ghostPreviewMesh.add(glass);
@@ -552,7 +532,7 @@
           ghostPreviewMesh = new THREE.Group();
           const frame = new THREE.Mesh(
             new THREE.BoxGeometry(0.9 + 0.1, 2.1 + 0.05, WALL_THICKNESS + 0.06),
-            new THREE.MeshStandardMaterial({ color: 0xF5620F, transparent: true, opacity: 0.3 })
+            new THREE.MeshStandardMaterial({ color: 0xF5620F, transparent: true, opacity: 0.45 })
           );
           frame.position.y = 2.1 / 2;
           ghostPreviewMesh.add(frame);
@@ -674,6 +654,34 @@
       return roof;
     }
 
+    // ── Wall Top Corner Snapping (for roof) ─────────────────────
+    function getWallTopCorners() {
+      const corners = [];
+      const seen = new Set();
+      for (const el of placedElements) {
+        if (el.userData?.type !== 'wall') continue;
+        for (const ep of [el.userData.start, el.userData.end]) {
+          const key = `${Math.round(ep.x*1000)},${Math.round(ep.z*1000)}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            corners.push(new THREE.Vector3(ep.x, WALL_HEIGHT, ep.z));
+          }
+        }
+      }
+      return corners;
+    }
+
+    function snapToWallTopCorner(groundPoint, threshold) {
+      const corners = getWallTopCorners();
+      let bestDist = threshold || 0.5;
+      let snapped = null;
+      for (const c of corners) {
+        const d = Math.sqrt((groundPoint.x - c.x) ** 2 + (groundPoint.z - c.z) ** 2);
+        if (d < bestDist) { bestDist = d; snapped = c.clone(); }
+      }
+      return snapped;
+    }
+
     // ── Sketch visuals ────────────────────────────────────────────
     const SKETCH_Y = WALL_HEIGHT + 0.05;
     function addSketchLine(f, t) { const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(f.x,SKETCH_Y,f.z), new THREE.Vector3(t.x,SKETCH_Y,t.z)]); const l = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0xF5620F })); scene.add(l); roofSketchLines.push(l); }
@@ -745,7 +753,6 @@
         const hit = raycastWalls(e);
         if (!hit) { updateInstruction('Hover over a wall and click to place'); return; }
         clearGhostPreview();
-        clearWallHover();
         if (currentChapter === 2) { handleWindowPlacement(hit); return; }
         if (currentChapter === 1 && currentLesson === 4) { handleDoorFromWallHit(hit); return; }
         if (currentChapter === 1 && currentLesson === 5 && l5Phase === 'door') { handleDoorFromWallHit(hit); return; }
@@ -817,7 +824,12 @@
       scene.add(win);
       placedElements.push(win);
       updateElementsList();
-      clearWallGuides();
+      // Only clear the guide if the window was placed on the correct wall
+      const target = CH2_TARGETS[currentLesson];
+      if (target) {
+        const r = scoreWindowPlacement(hit.position, target);
+        if (r.onCorrectWall) clearWallGuides();
+      }
       scoreAndComplete();
     }
 
@@ -828,17 +840,21 @@
         doorPlacedInL4 = true; l4Phase = 'roof';
         updateElementsList();
         document.getElementById('l4-phase-label').textContent = 'Sketch Roof (0/4)';
-        updateInstruction('Door placed. Click 4 corners to sketch the roof boundary');
+        updateInstruction('Door placed. Click the 4 top corners of the walls for the roof');
         setStatus('Door placed — sketch roof'); showRoofGuides();
       } else if (currentLesson === 5) {
         l5Elements.push(door); updateElementsList();
         l5Phase = 'roof'; document.getElementById('l5-progress-label').textContent = 'Sketch roof (0/4)';
-        updateInstruction('Door placed. Click 4 corners for the roof'); setStatus('Sketch roof');
+        updateInstruction('Door placed. Click the 4 top wall corners for the roof'); setStatus('Sketch roof');
       }
     }
 
     function handleRoofClick(p) {
-      const sp = snapToEndpoint(p); roofSketchPoints.push(sp.clone()); addSketchPoint(sp);
+      // Snap to wall top corners first, fall back to endpoint snap
+      const topSnap = snapToWallTopCorner(p, 0.5);
+      const sp = topSnap || snapToEndpoint(p);
+      roofSketchPoints.push(new THREE.Vector3(sp.x, 0, sp.z));
+      addSketchPoint(sp);
       if (roofSketchPoints.length > 1) addSketchLine(roofSketchPoints[roofSketchPoints.length-2], sp);
       if (currentChapter === 1 && currentLesson === 4) document.getElementById('l4-phase-label').textContent = `Sketch Roof (${roofSketchPoints.length}/4)`;
       if (currentChapter === 1 && currentLesson === 5) document.getElementById('l5-progress-label').textContent = `Sketch roof (${roofSketchPoints.length}/4)`;
@@ -1049,10 +1065,10 @@
           const r = scoreWindowPlacement(lastWin.userData.position, target);
           score = r.score;
           if (!r.onCorrectWall) {
-            details.push({ label: 'Wall selection', value: '0%', sub: `Should be on the ${target.targetWallName}`, color: '#EF4444' });
-            tip = `Place the window on the ${target.targetWallName}. Click directly on that wall.`;
+            details.push({ label: 'Wall selection', value: '0%', sub: 'Wrong wall — place on the green highlighted wall', color: '#EF4444' });
+            tip = 'Look for the wall with green guide lines and place your window there.';
           } else {
-            details.push({ label: 'Wall selection', value: '100%', sub: `Correct — ${target.targetWallName}`, color: '#34D399' });
+            details.push({ label: 'Wall selection', value: '100%', sub: 'Correct wall', color: '#34D399' });
             details.push({ label: 'Position accuracy', value: `${r.score}%`, sub: `${r.posDistMM} mm from target position`, color: r.score >= PASS_THRESHOLD ? '#34D399' : r.score >= 60 ? '#F5620F' : '#EF4444' });
             if (currentLesson === 2 && r.posDistMM > 0) {
               tip = `Target was 600mm from the corner. You were ${r.posDistMM}mm from target. Use the cursor coordinates to guide placement.`;
@@ -1244,7 +1260,7 @@
       hideResults(); currentLesson = num;
       wallStartPoint = null;
       if (wallPreviewMesh) { scene.remove(wallPreviewMesh); wallPreviewMesh = null; }
-      clearGhostPreview(); clearWallHover();
+      clearGhostPreview();
       document.getElementById('prop-length').style.display = 'none';
       document.getElementById('prop-l3-count').style.display = 'none';
       document.getElementById('prop-l4-phase').style.display = 'none';
