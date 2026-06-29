@@ -515,31 +515,28 @@
       const group = new THREE.Group();
       const hw = w / 2, hh = h / 2;
       const cy = yOffset + hh;
-
-      // Thin fill sits flush on the wall face
-      const fill = new THREE.Mesh(
-        new THREE.PlaneGeometry(w, h),
-        new THREE.MeshBasicMaterial({ color: 0xF5620F, transparent: true, opacity: 0.18, side: THREE.DoubleSide })
-      );
-      fill.position.set(0, cy, WALL_THICKNESS / 2 + 0.005);
-      group.add(fill);
-
-      // Orange outline edges (4 lines forming the opening rectangle)
+      const zOff = WALL_THICKNESS / 2 + 0.008;
       const lineMat = new THREE.LineBasicMaterial({ color: 0xF5620F });
-      const corners = [
-        new THREE.Vector3(-hw, cy - hh, WALL_THICKNESS / 2 + 0.006),
-        new THREE.Vector3( hw, cy - hh, WALL_THICKNESS / 2 + 0.006),
-        new THREE.Vector3( hw, cy + hh, WALL_THICKNESS / 2 + 0.006),
-        new THREE.Vector3(-hw, cy + hh, WALL_THICKNESS / 2 + 0.006),
-        new THREE.Vector3(-hw, cy - hh, WALL_THICKNESS / 2 + 0.006)
-      ];
-      const lineGeo = new THREE.BufferGeometry().setFromPoints(corners);
-      group.add(new THREE.Line(lineGeo, lineMat));
 
-      // Matching outline on the back face
-      const backCorners = corners.map(c => new THREE.Vector3(c.x, c.y, -(WALL_THICKNESS / 2 + 0.006)));
-      const backGeo = new THREE.BufferGeometry().setFromPoints(backCorners);
-      group.add(new THREE.Line(backGeo, lineMat));
+      // Front face outline
+      const front = [
+        new THREE.Vector3(-hw, cy - hh, zOff),
+        new THREE.Vector3( hw, cy - hh, zOff),
+        new THREE.Vector3( hw, cy + hh, zOff),
+        new THREE.Vector3(-hw, cy + hh, zOff),
+        new THREE.Vector3(-hw, cy - hh, zOff)
+      ];
+      group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(front), lineMat));
+
+      // Back face outline
+      const back = front.map(c => new THREE.Vector3(c.x, c.y, -zOff));
+      group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(back), lineMat));
+
+      // Connecting depth lines at corners
+      for (let i = 0; i < 4; i++) {
+        const depthLine = [front[i], new THREE.Vector3(front[i].x, front[i].y, -zOff)];
+        group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(depthLine), lineMat));
+      }
 
       return group;
     }
