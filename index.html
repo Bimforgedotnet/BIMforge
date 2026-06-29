@@ -732,6 +732,29 @@
       return { idx: bi, target: br, targetLenMM: Math.round(new THREE.Vector3(br.start[0],0,br.start[1]).distanceTo(new THREE.Vector3(br.end[0],0,br.end[1]))*1000) };
     }
 
+    // Optimal wall-to-target matching: tries all permutations to find
+    // the assignment that maximizes total score (only 24 permutations for 4 walls)
+    function optimalWallMatch(walls, targets) {
+      function perms(arr) {
+        if (arr.length <= 1) return [arr];
+        const result = [];
+        for (let i = 0; i < arr.length; i++) {
+          const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
+          for (const p of perms(rest)) result.push([arr[i], ...p]);
+        }
+        return result;
+      }
+      const n = Math.min(walls.length, targets.length);
+      const indices = Array.from({ length: n }, (_, i) => i);
+      let bestTotal = -1, bestAssign = null;
+      for (const perm of perms(indices)) {
+        let total = 0;
+        for (let i = 0; i < n; i++) total += scoreWall(walls[i], targets[perm[i]]).total;
+        if (total > bestTotal) { bestTotal = total; bestAssign = perm; }
+      }
+      return bestAssign;
+    }
+
     function pointToSegmentDist(px,pz,ax,az,bx,bz) {
       const dx=bx-ax, dz=bz-az, ls=dx*dx+dz*dz;
       if (ls<0.0001) return Math.sqrt((px-ax)**2+(pz-az)**2);
@@ -798,10 +821,18 @@
           }
         } else if (currentLesson===3) {
           if (l3Walls.length>=L3_REQUIRED_WALLS) {
-            const tl={0:'East wall',1:'North wall'}; const ut=new Set(); let ts=0;
-            const m=l3Walls.map(w=>({wall:w,...findBestTargetMatch(w,target.walls)}));
-            m.sort((a,b)=>scoreWall(b.wall,b.target).total-scoreWall(a.wall,a.target).total);
-            for(const mm of m){let t=mm.target,ti=mm.idx;if(ut.has(ti)){ti=ti===0?1:0;t=target.walls[ti];}ut.add(ti);const r=scoreWall(mm.wall,t);ts+=r.total;details.push({label:tl[ti],value:`${r.total}%`,sub:`${r.actualLenMM}mm (target: ${r.targetLenMM}mm)`,color:r.total>=PASS_THRESHOLD?'#34D399':r.total>=60?'#F5620F':'#EF4444'});mm.wall.material.color.setHex(r.total>=PASS_THRESHOLD?0xCCCCCC:r.total>=60?0xE8C86A:0xEF6B6B);}
+            const tl={0:'East wall',1:'North wall'};
+            const assign = optimalWallMatch(l3Walls, target.walls);
+            let ts=0;
+            if (assign) {
+              for (let i = 0; i < l3Walls.length; i++) {
+                const ti = assign[i];
+                const r = scoreWall(l3Walls[i], target.walls[ti]);
+                ts += r.total;
+                details.push({label:tl[ti],value:`${r.total}%`,sub:`${r.actualLenMM}mm (target: ${r.targetLenMM}mm)`,color:r.total>=PASS_THRESHOLD?'#34D399':r.total>=60?'#F5620F':'#EF4444'});
+                l3Walls[i].material.color.setHex(r.total>=PASS_THRESHOLD?0xCCCCCC:r.total>=60?0xE8C86A:0xEF6B6B);
+              }
+            }
             score=Math.round(ts/L3_REQUIRED_WALLS);
             const cl=checkRoomClosure(placedElements.filter(el=>el.userData?.type==='wall'));
             details.push({label:'Room closure',value:`${cl}%`,color:cl>=PASS_THRESHOLD?'#34D399':cl>=60?'#F5620F':'#EF4444'});
@@ -817,15 +848,28 @@
           else details.push({label:'Roof',value:'Missing',color:'#EF4444'});
           score=Math.round(ds*0.3+rs*0.7); tip='Doors are wall-hosted. Roofs trace the building footprint.';
         } else if (currentLesson===5) {
-          const ut=new Set(); let wt=0;
-          const wm=l5Walls.map(w=>({wall:w,...findBestTargetMatch(w,target.walls)}));
-          wm.sort((a,b)=>scoreWall(b.wall,b.target).total-scoreWall(a.wall,a.target).total);
           const wn=['South','West','East','North'];
-          for(const mm of wm){let t=mm.target,ti=mm.idx;if(ut.has(ti)){for(let j=0;j<target.walls.length;j++)if(!ut.has(j)){ti=j;t=target.walls[j];break;}}ut.add(ti);const r=scoreWall(mm.wall,t);wt+=r.total;details.push({label:`${wn[ti]} wall`,value:`${r.total}%`,sub:`${r.actualLenMM}mm (target: ${r.targetLenMM}mm)`,color:r.total>=PASS_THRESHOLD?'#34D399':r.total>=60?'#F5620F':'#EF4444'});}
+          const assign = optimalWallMatch(l5Walls, target.walls);
+          let wt = 0;
+          if (assign) {
+            for (let i = 0; i < l5Walls.length; i++) {
+              const ti = assign[i];
+              const r = scoreWall(l5Walls[i], target.walls[ti]);
+              wt += r.total;
+              details.push({label:`${wn[ti]} wall`,value:`${r.total}%`,sub:`${r.actualLenMM}mm (target: ${r.targetLenMM}mm)`,color:r.total>=PASS_THRESHOLD?'#34D399':r.total>=60?'#F5620F':'#EF4444'});
+            }
+          }
           const wa=Math.round(wt/L5_REQUIRED_WALLS);
           const de=l5Elements.find(el=>el.userData?.type==='door'); let ds=0;
-          if(de){const dr=scoreDoorChallenge(de.userData.position,target.doorTarget);ds=dr.score;details.push(dr.onCorrectWall?{label:'Door placement',value:`${dr.score}%`,sub:`${dr.posDistMM}mm from target`,color:dr.score>=PASS_THRESHOLD?'#34D399':dr.score>=60?'#F5620F':'#EF4444'}:{label:'Door',value:'0%',sub:'Wrong wall',color:'#EF4444'});}
-          else details.push({label:'Door',value:'Missing',color:'#EF4444'});
+          if(de){
+            const dr=scoreDoorChallenge(de.userData.position,target.doorTarget);
+            ds=dr.score;
+            if (!dr.onCorrectWall) {
+              details.push({label:'Door placement',value:'0%',sub:'Wrong wall — should be on south wall',color:'#EF4444'});
+            } else {
+              details.push({label:'Door placement',value:`${dr.score}%`,sub:`${dr.posDistMM}mm from target position`,color:dr.score>=PASS_THRESHOLD?'#34D399':dr.score>=60?'#F5620F':'#EF4444'});
+            }
+          } else details.push({label:'Door',value:'Missing',color:'#EF4444'});
           const re=l5Elements.find(el=>el.userData?.type==='roof'); let rs=0;
           if(re){const rr=scoreRoof(re.userData.points,target);rs=rr.total;details.push({label:'Roof',value:`${rr.total}%`,sub:`${rr.actualArea}m²`,color:rr.total>=PASS_THRESHOLD?'#34D399':rr.total>=60?'#F5620F':'#EF4444'});}
           else details.push({label:'Roof',value:'Missing',color:'#EF4444'});
