@@ -689,6 +689,7 @@
         roofSketchLines.forEach(o => scene.remove(o)); roofSketchLines = []; clearRoofGuides();
         if (currentLesson === 4) document.getElementById('l4-phase-label').textContent = 'Complete';
         if (currentLesson === 5) { l5Phase = 'done'; document.getElementById('l5-progress-label').textContent = 'Complete'; }
+        updateInstruction('Roof placed'); setStatus('Scoring...');
         scoreAndComplete();
       }
     }
@@ -906,6 +907,7 @@
       cState().completed[currentLesson - 1] = true;
       showResults(score, details, tip);
       updateProgress();
+      renderTabs();
     }
 
     // ── Results Panel ─────────────────────────────────────────────
