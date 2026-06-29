@@ -323,12 +323,12 @@
           { label: 'Place Window at Offset' }
         ],
         objectives: {
-          1: 'Place a window on the <strong class="text-dark-heading">south wall</strong>. Click on the wall to host the window. It will snap to the wall face at <strong class="text-dark-heading">900 mm sill height</strong>.',
-          2: 'Place a window on the <strong class="text-dark-heading">east wall</strong> at position <strong class="text-dark-heading">600 mm from the south-east corner</strong>. Use the measurement feedback to hit the target offset.'
+          1: 'Place a window on the <strong class="text-dark-heading">bottom wall (0,0)→(3000,0)</strong>. Click on the wall to host the window. It will snap to the wall face at <strong class="text-dark-heading">900 mm sill height</strong>.',
+          2: 'Place a window on the <strong class="text-dark-heading">right wall (3000,0)→(3000,3000)</strong> at position <strong class="text-dark-heading">600 mm from the bottom-right corner</strong>. Use the measurement feedback to hit the target offset.'
         },
         instructions: {
-          1: 'Click on the south wall to place a window',
-          2: 'Click on the east wall — aim for 600mm from the corner'
+          1: 'Click on the bottom wall (0,0)→(3000,0) to place a window',
+          2: 'Click on the right wall (3000,0)→(3000,3000) — aim for 600mm from the corner'
         }
       }
     };
@@ -654,8 +654,8 @@
 
     // ── Chapter 2: Window Placement ───────────────────────────────
     const CH2_TARGETS = {
-      1: { wallIdx: 0, wall: { a: [0,0], b: [3,0] }, targetPos: [1.5, 0], targetWallName: 'south wall' },
-      2: { wallIdx: 2, wall: { a: [3,0], b: [3,3] }, targetPos: [3, 0.6], targetWallName: 'east wall', offsetMM: 600 }
+      1: { wallIdx: 0, wall: { a: [0,0], b: [3,0] }, targetPos: [1.5, 0], targetWallName: 'bottom wall (0,0)→(3000,0)' },
+      2: { wallIdx: 2, wall: { a: [3,0], b: [3,3] }, targetPos: [3, 0.6], targetWallName: 'right wall (3000,0)→(3000,3000)', offsetMM: 600 }
     };
 
     function handleWindowPlacement(p) {
@@ -823,7 +823,7 @@
           }
         } else if (currentLesson===3) {
           if (l3Walls.length>=L3_REQUIRED_WALLS) {
-            const tl={0:'East wall',1:'North wall'};
+            const tl={0:'Wall (3000,0)→(3000,3000)',1:'Wall (0,3000)→(3000,3000)'};
             const assign = optimalWallMatch(l3Walls, target.walls);
             let ts=0;
             if (assign) {
@@ -850,7 +850,7 @@
           else details.push({label:'Roof',value:'Missing',color:'#EF4444'});
           score=Math.round(ds*0.3+rs*0.7); tip='Doors are wall-hosted. Roofs trace the building footprint.';
         } else if (currentLesson===5) {
-          const wn=['South','West','East','North'];
+          const wn=['Wall (0,0)→(3000,0)','Wall (0,0)→(0,3000)','Wall (3000,0)→(3000,3000)','Wall (0,3000)→(3000,3000)'];
           const assign = optimalWallMatch(l5Walls, target.walls);
           let wt = 0;
           if (assign) {
@@ -867,7 +867,7 @@
             const dr=scoreDoorChallenge(de.userData.position,target.doorTarget);
             ds=dr.score;
             if (!dr.onCorrectWall) {
-              details.push({label:'Door placement',value:'0%',sub:'Wrong wall — should be on south wall',color:'#EF4444'});
+              details.push({label:'Door placement',value:'0%',sub:'Wrong wall — should be on bottom wall (0,0)→(3000,0)',color:'#EF4444'});
             } else {
               details.push({label:'Door placement',value:`${dr.score}%`,sub:`${dr.posDistMM}mm from target position`,color:dr.score>=PASS_THRESHOLD?'#34D399':dr.score>=60?'#F5620F':'#EF4444'});
             }
