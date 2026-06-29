@@ -782,11 +782,20 @@
         return;
       }
 
+      // Roof mode: raycast walls first so user can click wall tops
+      const isRoofMode = currentChapter === 1 && ((currentLesson === 4 && l4Phase === 'roof') || (currentLesson === 5 && l5Phase === 'roof'));
+      if (isRoofMode) {
+        const wallHit = raycastWalls(e);
+        const groundHit = getGroundPoint(e);
+        const hitPoint = wallHit ? new THREE.Vector3(wallHit.hitPoint.x, 0, wallHit.hitPoint.z) : groundHit;
+        if (hitPoint) handleRoofClick(hitPoint);
+        return;
+      }
+
       const p = getGroundPoint(e);
       if (!p) return;
       if (currentChapter === 1) {
         if (currentLesson >= 1 && currentLesson <= 3) handleWallPlacement(p);
-        else if (currentLesson === 4 && l4Phase === 'roof') handleRoofClick(p);
         else if (currentLesson === 5) handleLesson5(p);
       }
     });
