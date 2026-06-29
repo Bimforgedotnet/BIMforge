@@ -449,12 +449,42 @@
       const h = raycaster.intersectObject(ground);
       return h.length > 0 ? new THREE.Vector3(snapToGrid(h[0].point.x), 0, snapToGrid(h[0].point.z)) : null;
     }
+    function isRoofMode() {
+      if (currentChapter !== 1) return false;
+      if (currentLesson === 4 && l4Phase === 'roof') return true;
+      if (currentLesson === 5 && l5Phase === 'roof') return true;
+      return false;
+    }
+
     function updateCursorPosition(e) {
+      // Roof mode: cursor snaps to wall top corners at wall height
+      if (isRoofMode()) {
+        const wallHit = raycastWalls(e);
+        const groundHit = getGroundPoint(e);
+        const basePoint = wallHit ? new THREE.Vector3(wallHit.hitPoint.x, 0, wallHit.hitPoint.z) : groundHit;
+        if (basePoint) {
+          const topSnap = snapToWallTopCorner(basePoint, 0.6);
+          if (topSnap) {
+            cursorIndicator.position.set(topSnap.x, WALL_HEIGHT + 0.02, topSnap.z);
+            cursorIndicator.visible = true;
+            cursorMat.color.setHex(0x34D399);
+            document.getElementById('cursor-pos').textContent = `(${Math.round(topSnap.x*1000)}, ${Math.round(topSnap.z*1000)}) ⊕ top`;
+          } else {
+            cursorIndicator.position.set(basePoint.x, 0.02, basePoint.z);
+            cursorIndicator.visible = true;
+            cursorMat.color.setHex(0xF5620F);
+            document.getElementById('cursor-pos').textContent = `(${Math.round(basePoint.x*1000)}, ${Math.round(basePoint.z*1000)})`;
+          }
+        } else {
+          cursorIndicator.visible = false;
+        }
+        return;
+      }
+
       const p = getGroundPoint(e);
       if (p) { const n = nearEndpoint(p); cursorIndicator.position.set(p.x, 0.02, p.z); cursorIndicator.visible = true; cursorMat.color.setHex(n ? 0x34D399 : 0xF5620F); document.getElementById('cursor-pos').textContent = `(${Math.round(p.x*1000)}, ${Math.round(p.z*1000)})${n ? ' ⊕' : ''}`; }
       else cursorIndicator.visible = false;
 
-      // Wall hover + ghost preview for window/door placement modes
       if (isWallHostMode()) {
         const hit = raycastWalls(e);
         updateGhostPreview(hit);
