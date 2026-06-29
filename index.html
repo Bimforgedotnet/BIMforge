@@ -513,19 +513,18 @@
 
     function updateWallHover(hit) {
       if (hoveredWall && (!hit || hit.wall !== hoveredWall)) {
-        hoveredWall.material.color.setHex(hoveredWallOrigColor);
+        hoveredWall.material.emissive.setHex(0x000000);
         hoveredWall = null;
       }
       if (hit && hit.wall !== hoveredWall) {
         hoveredWall = hit.wall;
-        hoveredWallOrigColor = hoveredWall.material.color.getHex();
-        hoveredWall.material.color.setHex(0xF5620F);
+        hoveredWall.material.emissive.setHex(0x332200);
       }
     }
 
     function clearWallHover() {
       if (hoveredWall) {
-        hoveredWall.material.color.setHex(hoveredWallOrigColor);
+        hoveredWall.material.emissive.setHex(0x000000);
         hoveredWall = null;
       }
     }
@@ -683,6 +682,60 @@
     function showRoofGuides() { clearRoofGuides(); [[0,0],[3,0],[3,3],[0,3]].forEach(c => { const m = new THREE.Mesh(new THREE.RingGeometry(0.06,0.1,4), new THREE.MeshBasicMaterial({ color: 0x34D399, side: THREE.DoubleSide, transparent: true, opacity: 0.5 })); m.rotation.x=-Math.PI/2; m.rotation.z=Math.PI/4; m.position.set(c[0],SKETCH_Y+0.02,c[1]); scene.add(m); roofGuideMarkers.push(m); }); }
     function clearRoofGuides() { roofGuideMarkers.forEach(m => scene.remove(m)); roofGuideMarkers = []; }
 
+    // ── Wall Guides (Ch2: highlight target wall) ────────────────
+    let wallGuideMarkers = [];
+
+    function showWallGuide(lessonNum) {
+      clearWallGuides();
+      const target = CH2_TARGETS[lessonNum];
+      if (!target) return;
+
+      // Find the wall mesh matching the target
+      const tw = target.wall;
+      for (const el of placedElements) {
+        if (el.userData?.type !== 'wall') continue;
+        const ws = el.userData.start, we = el.userData.end;
+        const d1 = Math.abs(ws.x - tw.a[0]) + Math.abs(ws.z - tw.a[1]) + Math.abs(we.x - tw.b[0]) + Math.abs(we.z - tw.b[1]);
+        const d2 = Math.abs(ws.x - tw.b[0]) + Math.abs(ws.z - tw.b[1]) + Math.abs(we.x - tw.a[0]) + Math.abs(we.z - tw.a[1]);
+        if (Math.min(d1, d2) < 0.3) {
+          // Add pulsing edge lines along the top and bottom of this wall
+          const a = el.userData.start, b = el.userData.end;
+          const pts = [
+            [a.x, 0.01, a.z], [b.x, 0.01, b.z],
+            [a.x, WALL_HEIGHT, a.z], [b.x, WALL_HEIGHT, b.z]
+          ];
+          // Bottom edge
+          const g1 = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...pts[0]), new THREE.Vector3(...pts[1])]);
+          const l1 = new THREE.Line(g1, new THREE.LineBasicMaterial({ color: 0x34D399 }));
+          scene.add(l1); wallGuideMarkers.push(l1);
+          // Top edge
+          const g2 = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...pts[2]), new THREE.Vector3(...pts[3])]);
+          const l2 = new THREE.Line(g2, new THREE.LineBasicMaterial({ color: 0x34D399 }));
+          scene.add(l2); wallGuideMarkers.push(l2);
+          // Vertical edges
+          for (let i = 0; i < 2; i++) {
+            const gv = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...pts[i]), new THREE.Vector3(...pts[i + 2])]);
+            const lv = new THREE.Line(gv, new THREE.LineBasicMaterial({ color: 0x34D399 }));
+            scene.add(lv); wallGuideMarkers.push(lv);
+          }
+          // Small label dot at wall center
+          const cx = (a.x + b.x) / 2, cz = (a.z + b.z) / 2;
+          const dot = new THREE.Mesh(
+            new THREE.SphereGeometry(0.06, 8, 8),
+            new THREE.MeshBasicMaterial({ color: 0x34D399 })
+          );
+          dot.position.set(cx, WALL_HEIGHT / 2, cz);
+          scene.add(dot); wallGuideMarkers.push(dot);
+          break;
+        }
+      }
+    }
+
+    function clearWallGuides() {
+      wallGuideMarkers.forEach(m => scene.remove(m));
+      wallGuideMarkers = [];
+    }
+
     // ── Interaction Handler ───────────────────────────────────────
     canvas.addEventListener('click', (e) => {
       if (isOrbiting || isPanning || e.shiftKey || e.altKey) return;
@@ -755,8 +808,8 @@
 
     // ── Chapter 2: Window Placement ───────────────────────────────
     const CH2_TARGETS = {
-      1: { wallIdx: 0, wall: { a: [0,0], b: [3,0] }, targetPos: [1.5, 0], targetWallName: 'bottom wall (0,0)→(3000,0)' },
-      2: { wallIdx: 2, wall: { a: [3,0], b: [3,3] }, targetPos: [3, 0.6], targetWallName: 'right wall (3000,0)→(3000,3000)', offsetMM: 600 }
+      1: { wallIdx: 0, wall: { a: [0,0], b: [3,0] }, targetPos: [1.5, 0], targetWallName: 'highlighted wall' },
+      2: { wallIdx: 2, wall: { a: [3,0], b: [3,3] }, targetPos: [3, 0.6], targetWallName: 'highlighted wall', offsetMM: 600 }
     };
 
     function handleWindowPlacement(hit) {
@@ -764,6 +817,7 @@
       scene.add(win);
       placedElements.push(win);
       updateElementsList();
+      clearWallGuides();
       scoreAndComplete();
     }
 
@@ -1213,6 +1267,16 @@
           updateElementsList();
         }
       }
+
+      // Clear any wall guide highlights from previous lessons
+      clearWallGuides();
+
+      // Show wall guides for Ch2 lessons (highlight target walls)
+      if (currentChapter === 2) showWallGuide(num);
+
+      // Auto-switch to top view for wall drawing lessons (Revit plan view)
+      const isWallDrawing = currentChapter === 1 && (num <= 3 || (num === 5));
+      if (isWallDrawing) setView('top');
 
       renderTabs();
       const ch = CHAPTERS[currentChapter];
