@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bim-academy",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-Command", "$listener = [System.Net.HttpListener]::new(); $listener.Prefixes.Add('http://localhost:3000/'); $listener.Start(); while ($listener.IsListening) { $ctx = $listener.GetContext(); $file = Join-Path 'C:\\Users\\Declan Davidson\\Downloads' ($ctx.Request.Url.LocalPath.TrimStart('/')); if ($ctx.Request.Url.LocalPath -eq '/') { $file = 'C:\\Users\\Declan Davidson\\Downloads\\index.html' }; if (Test-Path $file) { $bytes = [IO.File]::ReadAllBytes($file); $ctx.Response.ContentType = 'text/html'; $ctx.Response.OutputStream.Write($bytes, 0, $bytes.Length) }; $ctx.Response.Close() }"],
+      "port": 3000
+    }
+  ]
+}
