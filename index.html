@@ -123,14 +123,14 @@
           </div>
           <div class="text-left">
             <h3 class="font-display font-semibold text-dark-heading text-sm">Chapter 1 — First Room</h3>
-            <p class="text-xs text-dark-text">4 Lessons · Build your first enclosed space</p>
+            <p class="text-xs text-dark-text">5 Lessons · Build your first enclosed space</p>
           </div>
         </div>
         <div class="grid grid-cols-2 gap-2 text-xs text-dark-text">
           <div class="flex items-center gap-2"><i class="fa-solid fa-vector-square w-4 text-center text-accent"></i> Place walls</div>
           <div class="flex items-center gap-2"><i class="fa-solid fa-ruler w-4 text-center text-accent"></i> Grid snapping</div>
           <div class="flex items-center gap-2"><i class="fa-solid fa-door-open w-4 text-center text-accent"></i> Add door</div>
-          <div class="flex items-center gap-2"><i class="fa-solid fa-house-chimney w-4 text-center text-accent"></i> Sketch roof</div>
+          <div class="flex items-center gap-2"><i class="fa-solid fa-star w-4 text-center text-accent"></i> Final challenge</div>
         </div>
       </div>
 
@@ -164,7 +164,10 @@
         <!-- Stats -->
         <div class="w-64 space-y-3">
           <div class="rounded-xl p-4" style="background: #13161D; border: 1px solid #222636;">
-            <p class="text-xs text-dark-text uppercase tracking-wider mb-2 font-medium">Overall Score</p>
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs text-dark-text uppercase tracking-wider font-medium">Overall Score</p>
+              <p class="text-xs font-medium" id="ch-xp-display" style="color: #F5620F;">0 XP</p>
+            </div>
             <div class="flex items-baseline gap-2">
               <span class="font-display text-3xl font-bold" id="ch-overall-score" style="color: #34D399;">—</span>
               <span class="text-xs text-dark-text">/ 100</span>
@@ -205,10 +208,8 @@
         <div class="w-px h-5" style="background: #222636;"></div>
         <span class="text-xs text-dark-text font-medium">Chapter 1 — First Room</span>
       </div>
-
-      <!-- Chapter Progress -->
       <div class="flex items-center gap-3">
-        <span class="text-xs text-dark-text" id="progress-label">0 / 4 Lessons</span>
+        <span class="text-xs text-dark-text" id="progress-label">0 / 5 Lessons</span>
         <div class="w-32 h-1.5 rounded-full" style="background: #222636;">
           <div id="progress-bar" class="h-full rounded-full progress-fill" style="background: #F5620F; width: 0%;"></div>
         </div>
@@ -227,11 +228,15 @@
       </button>
       <button class="lesson-tab flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border border-transparent text-dark-text" data-lesson="3" onclick="switchLesson(3)">
         <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border border-current">3</span>
-        Complete Room Walls
+        Complete Room
       </button>
       <button class="lesson-tab flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border border-transparent text-dark-text" data-lesson="4" onclick="switchLesson(4)">
         <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border border-current">4</span>
-        Add Door & Roof
+        Door & Roof
+      </button>
+      <button class="lesson-tab flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border border-transparent text-dark-text" data-lesson="5" onclick="switchLesson(5)">
+        <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border border-current"><i class="fa-solid fa-star text-[8px]"></i></span>
+        Final Challenge
       </button>
     </div>
 
@@ -242,7 +247,7 @@
       <div class="flex-1 relative min-w-0">
         <canvas id="three-canvas"></canvas>
 
-        <!-- View Controls (top-left overlay) -->
+        <!-- View Controls -->
         <div class="absolute top-3 left-3 flex items-center gap-1">
           <button class="view-btn active px-2.5 py-1.5 rounded-md text-xs font-medium border" style="border-color: #222636;" data-view="3d" onclick="setView('3d')">
             <i class="fa-solid fa-cube mr-1"></i> 3D
@@ -259,7 +264,7 @@
           </button>
         </div>
 
-        <!-- Live Measurement Bar (visible during wall placement) -->
+        <!-- Live Measurement Bar -->
         <div id="measure-bar" class="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-4 px-4 py-1.5 rounded-lg text-xs font-medium" style="background: rgba(19, 22, 29, 0.95); border: 1px solid #F5620F; opacity: 0;">
           <span class="text-dark-text">Length: <strong class="text-dark-heading" id="m-length">—</strong></span>
           <span class="w-px h-3" style="background: #222636;"></span>
@@ -268,13 +273,13 @@
           <span class="text-dark-text">From <strong class="text-accent" id="m-start">—</strong> to <strong class="text-accent" id="m-end">—</strong></span>
         </div>
 
-        <!-- Instruction Overlay (bottom-center) -->
+        <!-- Instruction Overlay -->
         <div id="instruction-overlay" class="absolute bottom-16 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-xs font-medium" style="background: rgba(19, 22, 29, 0.92); border: 1px solid #222636; color: #E8E9ED;">
           <i class="fa-solid fa-mouse-pointer text-accent mr-2"></i>
           <span id="instruction-text">Click to place the start point of your wall</span>
         </div>
 
-        <!-- Results Panel (non-blocking, slides up from bottom-right) -->
+        <!-- Results Panel -->
         <div id="results-panel" class="absolute bottom-14 right-4 w-80 rounded-xl overflow-hidden" style="background: #13161D; border: 1px solid #222636; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
           <div class="px-4 py-3" style="border-bottom: 1px solid #222636;">
             <div class="flex items-center justify-between">
@@ -293,8 +298,7 @@
               </div>
             </div>
             <div class="space-y-1.5 mb-2" id="score-details"></div>
-            <div class="mb-3 px-2 py-1.5 rounded text-[11px] leading-relaxed" id="score-tip" style="background: rgba(245, 98, 15, 0.06); border: 1px solid rgba(245, 98, 15, 0.15); color: #A0A4B8; display: none;">
-            </div>
+            <div class="mb-3 px-2 py-1.5 rounded text-[11px] leading-relaxed" id="score-tip" style="background: rgba(245, 98, 15, 0.06); border: 1px solid rgba(245, 98, 15, 0.15); color: #A0A4B8; display: none;"></div>
             <button id="btn-continue" onclick="continueToNextLesson()" class="w-full py-2 rounded-lg font-display font-semibold text-white text-xs tracking-wide"
               style="background: #F5620F;">
               Continue to Next Lesson <i class="fa-solid fa-arrow-right ml-1"></i>
@@ -306,18 +310,55 @@
       <!-- RIGHT SIDEBAR -->
       <aside class="flex-none w-72 flex flex-col overflow-y-auto" style="background: #13161D; border-left: 1px solid #222636;">
 
-        <!-- Lesson Info Section -->
+        <!-- Lesson Info -->
         <div class="sidebar-section p-4">
           <div class="flex items-center gap-2 mb-2">
             <i class="fa-solid fa-book-open text-accent text-xs"></i>
             <h3 class="font-display font-semibold text-dark-heading text-xs uppercase tracking-wider">Lesson Objective</h3>
           </div>
-          <p class="text-sm text-dark-text leading-relaxed" id="lesson-objective">
-            Place a wall along the X-axis from <strong class="text-dark-heading">(0, 0)</strong> to <strong class="text-dark-heading">(3000, 0)</strong>. Click to set start and end points.
-          </p>
+          <p class="text-sm text-dark-text leading-relaxed" id="lesson-objective"></p>
         </div>
 
-        <!-- Properties Section -->
+        <!-- Reference Image (L5 only) -->
+        <div class="sidebar-section p-4" id="reference-section" style="display: none;">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="fa-solid fa-image text-accent text-xs"></i>
+            <h3 class="font-display font-semibold text-dark-heading text-xs uppercase tracking-wider">Reference</h3>
+          </div>
+          <div class="rounded-lg overflow-hidden" style="background: #0B0D11; border: 1px solid #222636;">
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%;">
+              <rect x="0" y="0" width="200" height="200" fill="#0B0D11"/>
+              <!-- Grid -->
+              <line x1="30" y1="30" x2="30" y2="170" stroke="#181C28" stroke-width="0.5"/>
+              <line x1="100" y1="30" x2="100" y2="170" stroke="#181C28" stroke-width="0.5"/>
+              <line x1="170" y1="30" x2="170" y2="170" stroke="#181C28" stroke-width="0.5"/>
+              <line x1="30" y1="30" x2="170" y2="30" stroke="#181C28" stroke-width="0.5"/>
+              <line x1="30" y1="100" x2="170" y2="100" stroke="#181C28" stroke-width="0.5"/>
+              <line x1="30" y1="170" x2="170" y2="170" stroke="#181C28" stroke-width="0.5"/>
+              <!-- Walls -->
+              <rect x="28" y="168" width="144" height="4" rx="1" fill="#CCCCCC"/>
+              <rect x="28" y="28" width="4" height="144" rx="1" fill="#CCCCCC"/>
+              <rect x="168" y="28" width="4" height="144" rx="1" fill="#CCCCCC"/>
+              <rect x="28" y="28" width="144" height="4" rx="1" fill="#CCCCCC"/>
+              <!-- Door -->
+              <rect x="85" y="168" width="30" height="4" rx="1" fill="#A0896C"/>
+              <!-- Roof fill -->
+              <rect x="32" y="32" width="136" height="136" rx="2" fill="#5A6577" opacity="0.15"/>
+              <!-- Dimensions -->
+              <text x="100" y="190" text-anchor="middle" fill="#A0A4B8" font-size="9" font-family="Inter, sans-serif">3000 mm</text>
+              <text x="15" y="105" text-anchor="middle" fill="#A0A4B8" font-size="9" font-family="Inter, sans-serif" transform="rotate(-90, 15, 105)">3000 mm</text>
+              <!-- Labels -->
+              <text x="100" y="15" text-anchor="middle" fill="#F5620F" font-size="8" font-family="Inter, sans-serif" font-weight="600">TOP VIEW — Target Room</text>
+              <!-- Corner coords -->
+              <text x="30" y="180" text-anchor="start" fill="#666" font-size="6" font-family="monospace">(0,0)</text>
+              <text x="170" y="180" text-anchor="end" fill="#666" font-size="6" font-family="monospace">(3000,0)</text>
+              <text x="170" y="27" text-anchor="end" fill="#666" font-size="6" font-family="monospace">(3000,3000)</text>
+              <text x="30" y="27" text-anchor="start" fill="#666" font-size="6" font-family="monospace">(0,3000)</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Properties -->
         <div class="sidebar-section p-4">
           <div class="flex items-center gap-2 mb-3">
             <i class="fa-solid fa-sliders text-accent text-xs"></i>
@@ -352,10 +393,14 @@
               <span class="text-dark-text">Phase</span>
               <span class="text-dark-heading font-medium" id="l4-phase-label">Place Door</span>
             </div>
+            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs" id="prop-l5-progress" style="display: none;">
+              <span class="text-dark-text">Challenge</span>
+              <span class="text-dark-heading font-medium" id="l5-progress-label">Walls: 0/4</span>
+            </div>
           </div>
         </div>
 
-        <!-- Placed Elements Section -->
+        <!-- Placed Elements -->
         <div class="sidebar-section p-4">
           <div class="flex items-center gap-2 mb-3">
             <i class="fa-solid fa-layer-group text-accent text-xs"></i>
@@ -366,7 +411,7 @@
           </div>
         </div>
 
-        <!-- Actions Section -->
+        <!-- Actions -->
         <div class="sidebar-section p-4 mt-auto">
           <button id="btn-clear" onclick="clearCurrentPlacement()" class="w-full py-2 rounded-lg text-xs font-medium border transition-all hover:bg-white/5"
             style="border-color: #222636; color: #A0A4B8;">
@@ -397,7 +442,7 @@
        JAVASCRIPT
        ============================================================ -->
   <script>
-    // ── Constants ──────────────────────────────────────────────────
+    const TOTAL_LESSONS = 5;
     const GRID_SNAP = 0.3;
     const WALL_HEIGHT = 2.7;
     const WALL_THICKNESS = 0.2;
@@ -409,11 +454,12 @@
     const MAX_ZOOM = 40;
     const PASS_THRESHOLD = 80;
     const L3_REQUIRED_WALLS = 2;
+    const L5_REQUIRED_WALLS = 4;
 
     // ── State ─────────────────────────────────────────────────────
     let currentLesson = 1;
-    let lessonsCompleted = [false, false, false, false];
-    let lessonScores = [0, 0, 0, 0];
+    let lessonsCompleted = new Array(TOTAL_LESSONS).fill(false);
+    let lessonScores = new Array(TOTAL_LESSONS).fill(0);
     let placedElements = [];
 
     let wallStartPoint = null;
@@ -424,6 +470,12 @@
     let l3WallsPlaced = 0;
     let l3Walls = [];
     let l4Phase = 'door';
+
+    // Lesson 5 (Final Challenge) state
+    let l5Phase = 'walls'; // 'walls' | 'door' | 'roof'
+    let l5WallsPlaced = 0;
+    let l5Walls = [];
+    let l5Elements = []; // all elements placed during L5
 
     let isOrbiting = false;
     let isPanning = false;
@@ -445,10 +497,8 @@
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
-
     const hemiLight = new THREE.HemisphereLight(0xB1C4E0, 0x283040, 0.5);
     scene.add(hemiLight);
-
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
     dirLight.position.set(8, 12, 6);
     dirLight.castShadow = true;
@@ -544,7 +594,6 @@
         ORBIT_TARGET.add(up.multiplyScalar(dy * panSpeed));
         updateCameraFromSpherical();
       }
-
       updateCursorPosition(e);
     });
 
@@ -592,7 +641,7 @@
       }
     }
 
-    // ── Endpoint Snapping (soft assist) ──────────────────────────
+    // ── Endpoint Snapping ─────────────────────────────────────────
     const SNAP_THRESHOLD = 0.25;
     function snapToEndpoint(point) {
       const walls = placedElements.filter(el => el.userData?.type === 'wall');
@@ -601,10 +650,7 @@
       for (const wall of walls) {
         for (const ep of [wall.userData.start, wall.userData.end]) {
           const d = Math.sqrt((point.x - ep.x) ** 2 + (point.z - ep.z) ** 2);
-          if (d < bestDist) {
-            bestDist = d;
-            snapped = ep.clone();
-          }
+          if (d < bestDist) { bestDist = d; snapped = ep.clone(); }
         }
       }
       return snapped || point;
@@ -614,8 +660,7 @@
       const walls = placedElements.filter(el => el.userData?.type === 'wall');
       for (const wall of walls) {
         for (const ep of [wall.userData.start, wall.userData.end]) {
-          const d = Math.sqrt((point.x - ep.x) ** 2 + (point.z - ep.z) ** 2);
-          if (d < 0.4) return true;
+          if (Math.sqrt((point.x - ep.x) ** 2 + (point.z - ep.z) ** 2) < 0.4) return true;
         }
       }
       return false;
@@ -628,26 +673,16 @@
       const dz = end.z - start.z;
       const length = Math.sqrt(dx * dx + dz * dz);
       if (length < 0.01) return null;
-
       const angle = Math.atan2(dz, dx);
       const joinedLength = length + WALL_JOIN_EXTEND;
       const geo = new THREE.BoxGeometry(joinedLength, WALL_HEIGHT, WALL_THICKNESS);
       const mat = new THREE.MeshStandardMaterial({ color: 0xCCCCCC, roughness: 0.7, metalness: 0.1 });
       const wall = new THREE.Mesh(geo, mat);
-      wall.position.set(
-        (start.x + end.x) / 2,
-        WALL_HEIGHT / 2,
-        (start.z + end.z) / 2
-      );
+      wall.position.set((start.x + end.x) / 2, WALL_HEIGHT / 2, (start.z + end.z) / 2);
       wall.rotation.y = -angle;
       wall.castShadow = true;
       wall.receiveShadow = true;
-      wall.userData = {
-        type: 'wall',
-        start: start.clone(),
-        end: end.clone(),
-        lengthMM: Math.round(length * 1000)
-      };
+      wall.userData = { type: 'wall', start: start.clone(), end: end.clone(), lengthMM: Math.round(length * 1000) };
       return wall;
     }
 
@@ -657,29 +692,20 @@
       const dz = current.z - start.z;
       const length = Math.sqrt(dx * dx + dz * dz);
       if (length < 0.01) return;
-
       const angle = Math.atan2(dz, dx);
       const joinedLength = length + WALL_JOIN_EXTEND;
       const geo = new THREE.BoxGeometry(joinedLength, WALL_HEIGHT, WALL_THICKNESS);
       const mat = new THREE.MeshStandardMaterial({ color: 0xF5620F, transparent: true, opacity: 0.35, roughness: 0.7 });
       wallPreviewMesh = new THREE.Mesh(geo, mat);
-      wallPreviewMesh.position.set(
-        (start.x + current.x) / 2,
-        WALL_HEIGHT / 2,
-        (start.z + current.z) / 2
-      );
+      wallPreviewMesh.position.set((start.x + current.x) / 2, WALL_HEIGHT / 2, (start.z + current.z) / 2);
       wallPreviewMesh.rotation.y = -angle;
       scene.add(wallPreviewMesh);
-
-      // Live measurement feedback
       const lenMM = Math.round(length * 1000);
       const angleDeg = Math.round(Math.atan2(-dz, dx) * 180 / Math.PI);
       const startMM = `(${Math.round(start.x * 1000)}, ${Math.round(start.z * 1000)})`;
       const endMM = `(${Math.round(current.x * 1000)}, ${Math.round(current.z * 1000)})`;
-
       document.getElementById('wall-length').textContent = `${lenMM} mm`;
       document.getElementById('prop-length').style.display = '';
-
       document.getElementById('m-length').textContent = `${lenMM} mm`;
       document.getElementById('m-angle').textContent = `${angleDeg}°`;
       document.getElementById('m-start').textContent = startMM;
@@ -691,48 +717,33 @@
       document.getElementById('measure-bar').style.opacity = '0';
     }
 
-    // ── Door Creation (Revit-style: hosted on wall face) ─────────
+    // ── Door Creation ─────────────────────────────────────────────
     function findNearestWall(clickPoint) {
       const walls = placedElements.filter(el => el.userData?.type === 'wall');
-      let bestWall = null, bestDist = Infinity, bestProj = null, bestT = 0;
-
+      let bestWall = null, bestDist = Infinity, bestProj = null;
       for (const wall of walls) {
-        const a = wall.userData.start;
-        const b = wall.userData.end;
+        const a = wall.userData.start, b = wall.userData.end;
         const dx = b.x - a.x, dz = b.z - a.z;
         const lenSq = dx * dx + dz * dz;
         if (lenSq < 0.001) continue;
-
         let t = ((clickPoint.x - a.x) * dx + (clickPoint.z - a.z) * dz) / lenSq;
         t = Math.max(0.15, Math.min(0.85, t));
-
-        const projX = a.x + t * dx;
-        const projZ = a.z + t * dz;
+        const projX = a.x + t * dx, projZ = a.z + t * dz;
         const dist = Math.sqrt((clickPoint.x - projX) ** 2 + (clickPoint.z - projZ) ** 2);
-
-        if (dist < bestDist) {
-          bestDist = dist;
-          bestWall = wall;
-          bestProj = new THREE.Vector3(projX, 0, projZ);
-          bestT = t;
-        }
+        if (dist < bestDist) { bestDist = dist; bestWall = wall; bestProj = new THREE.Vector3(projX, 0, projZ); }
       }
-
       return { wall: bestWall, point: bestProj, distance: bestDist };
     }
 
     function createDoorMesh(position, wallAngle) {
-      const doorWidth = 0.9;
-      const doorHeight = 2.1;
+      const doorWidth = 0.9, doorHeight = 2.1;
       const group = new THREE.Group();
-
       const frameGeo = new THREE.BoxGeometry(doorWidth + 0.1, doorHeight + 0.05, WALL_THICKNESS + 0.05);
       const frameMat = new THREE.MeshStandardMaterial({ color: 0x8B7355, roughness: 0.6 });
       const frame = new THREE.Mesh(frameGeo, frameMat);
       frame.position.y = doorHeight / 2;
       frame.castShadow = true;
       group.add(frame);
-
       const panelGeo = new THREE.BoxGeometry(doorWidth - 0.05, doorHeight - 0.1, 0.05);
       const panelMat = new THREE.MeshStandardMaterial({ color: 0xA0896C, roughness: 0.5 });
       const panel = new THREE.Mesh(panelGeo, panelMat);
@@ -740,7 +751,6 @@
       panel.position.z = WALL_THICKNESS / 2 + 0.03;
       panel.castShadow = true;
       group.add(panel);
-
       group.position.copy(position);
       group.rotation.y = -wallAngle;
       group.userData = { type: 'door', position: position.clone(), wallAngle };
@@ -750,24 +760,18 @@
     // ── Roof Creation ─────────────────────────────────────────────
     function createRoofMesh(points) {
       if (points.length < 3) return null;
-
       const cx = points.reduce((s, p) => s + p.x, 0) / points.length;
       const cz = points.reduce((s, p) => s + p.z, 0) / points.length;
       const expand = WALL_THICKNESS * 0.3;
-
       const shape = new THREE.Shape();
       const expanded = points.map(p => {
         const dirX = p.x - cx, dirZ = p.z - cz;
         const len = Math.sqrt(dirX * dirX + dirZ * dirZ) || 1;
         return { x: p.x + (dirX / len) * expand, z: p.z + (dirZ / len) * expand };
       });
-
       shape.moveTo(expanded[0].x, -expanded[0].z);
-      for (let i = 1; i < expanded.length; i++) {
-        shape.lineTo(expanded[i].x, -expanded[i].z);
-      }
+      for (let i = 1; i < expanded.length; i++) shape.lineTo(expanded[i].x, -expanded[i].z);
       shape.closePath();
-
       const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.15, bevelEnabled: false });
       const mat = new THREE.MeshStandardMaterial({ color: 0x5A6577, roughness: 0.8, metalness: 0.2 });
       const roof = new THREE.Mesh(geo, mat);
@@ -779,37 +783,30 @@
       return roof;
     }
 
-    // ── Sketch Line (for roof boundary preview) ───────────────────
+    // ── Sketch visuals ────────────────────────────────────────────
     const SKETCH_Y = WALL_HEIGHT + 0.05;
-
     function addSketchLine(from, to) {
       const geo = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(from.x, SKETCH_Y, from.z),
-        new THREE.Vector3(to.x, SKETCH_Y, to.z)
+        new THREE.Vector3(from.x, SKETCH_Y, from.z), new THREE.Vector3(to.x, SKETCH_Y, to.z)
       ]);
-      const mat = new THREE.LineBasicMaterial({ color: 0xF5620F, linewidth: 2 });
-      const line = new THREE.Line(geo, mat);
+      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xF5620F, linewidth: 2 }));
       scene.add(line);
       roofSketchLines.push(line);
     }
-
     function addSketchPoint(pos) {
-      const geo = new THREE.SphereGeometry(0.08, 12, 12);
-      const mat = new THREE.MeshBasicMaterial({ color: 0xF5620F });
-      const dot = new THREE.Mesh(geo, mat);
+      const dot = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), new THREE.MeshBasicMaterial({ color: 0xF5620F }));
       dot.position.set(pos.x, SKETCH_Y, pos.z);
       scene.add(dot);
       roofSketchLines.push(dot);
     }
-
     let roofGuideMarkers = [];
     function showRoofGuides() {
       clearRoofGuides();
-      const corners = [[0, 0], [3, 0], [3, 3], [0, 3]];
-      corners.forEach(c => {
-        const geo = new THREE.RingGeometry(0.06, 0.1, 4);
-        const mat = new THREE.MeshBasicMaterial({ color: 0x34D399, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
-        const marker = new THREE.Mesh(geo, mat);
+      [[0,0],[3,0],[3,3],[0,3]].forEach(c => {
+        const marker = new THREE.Mesh(
+          new THREE.RingGeometry(0.06, 0.1, 4),
+          new THREE.MeshBasicMaterial({ color: 0x34D399, side: THREE.DoubleSide, transparent: true, opacity: 0.5 })
+        );
         marker.rotation.x = -Math.PI / 2;
         marker.rotation.z = Math.PI / 4;
         marker.position.set(c[0], SKETCH_Y + 0.02, c[1]);
@@ -827,12 +824,9 @@
       if (isOrbiting || isPanning || e.shiftKey || e.altKey) return;
       const p = getGroundPoint(e);
       if (!p) return;
-
-      if (currentLesson >= 1 && currentLesson <= 3) {
-        handleWallPlacement(p);
-      } else if (currentLesson === 4) {
-        handleLesson4(p);
-      }
+      if (currentLesson >= 1 && currentLesson <= 3) handleWallPlacement(p);
+      else if (currentLesson === 4) handleLesson4(p);
+      else if (currentLesson === 5) handleLesson5(p);
     });
 
     function handleWallPlacement(p) {
@@ -851,28 +845,16 @@
           updateElementsList();
           document.getElementById('prop-length').style.display = 'none';
           wallStartPoint = null;
-
           if (currentLesson === 3) {
             l3Walls.push(wall);
             l3WallsPlaced++;
             document.getElementById('l3-wall-count').textContent = `${l3WallsPlaced} / ${L3_REQUIRED_WALLS}`;
-
-            // Visual length feedback: find best-matching target for this wall
             const bestMatch = findBestTargetMatch(wall, LESSON_TARGETS[3].walls);
             const lenErr = Math.abs(wall.userData.lengthMM - bestMatch.targetLenMM);
-            if (lenErr > 200) {
-              wall.material.color.setHex(0xEF6B6B);
-              setStatus(`Wall length off by ${lenErr} mm`);
-            } else if (lenErr > 0) {
-              wall.material.color.setHex(0xE8C86A);
-            }
-
-            if (l3WallsPlaced >= L3_REQUIRED_WALLS) {
-              scoreAndComplete();
-            } else {
-              updateInstruction(`Wall ${l3WallsPlaced} of ${L3_REQUIRED_WALLS} placed. Place the next wall to close the room`);
-              setStatus(`${l3WallsPlaced}/${L3_REQUIRED_WALLS} walls placed`);
-            }
+            if (lenErr > 200) { wall.material.color.setHex(0xEF6B6B); setStatus(`Wall length off by ${lenErr} mm`); }
+            else if (lenErr > 0) wall.material.color.setHex(0xE8C86A);
+            if (l3WallsPlaced >= L3_REQUIRED_WALLS) scoreAndComplete();
+            else { updateInstruction(`Wall ${l3WallsPlaced} of ${L3_REQUIRED_WALLS} placed. Place the next wall to close the room`); setStatus(`${l3WallsPlaced}/${L3_REQUIRED_WALLS} walls placed`); }
           } else {
             scoreAndComplete();
           }
@@ -883,110 +865,124 @@
     function handleLesson4(p) {
       if (l4Phase === 'door') {
         const nearest = findNearestWall(p);
-        if (!nearest.wall || nearest.distance > 0.8) {
-          updateInstruction('Click closer to a wall to place the door');
-          setStatus('No wall nearby');
-          return;
-        }
-        const ws = nearest.wall.userData.start;
-        const we = nearest.wall.userData.end;
-        const wallAngle = Math.atan2(we.z - ws.z, we.x - ws.x);
-        const door = createDoorMesh(nearest.point, wallAngle);
-        scene.add(door);
-        placedElements.push(door);
-        doorPlacedInL4 = true;
-        l4Phase = 'roof';
+        if (!nearest.wall || nearest.distance > 0.8) { updateInstruction('Click closer to a wall to place the door'); setStatus('No wall nearby'); return; }
+        const ws = nearest.wall.userData.start, we = nearest.wall.userData.end;
+        const door = createDoorMesh(nearest.point, Math.atan2(we.z - ws.z, we.x - ws.x));
+        scene.add(door); placedElements.push(door);
+        doorPlacedInL4 = true; l4Phase = 'roof';
         updateElementsList();
         document.getElementById('l4-phase-label').textContent = 'Sketch Roof (0/4)';
         updateInstruction('Click 4 corners to define the roof boundary — start at a room corner');
         setStatus('Door placed on wall — now sketch the roof');
         showRoofGuides();
       } else if (l4Phase === 'roof') {
+        handleRoofClick(p);
+      }
+    }
+
+    // ── Lesson 5: Final Challenge ─────────────────────────────────
+    function handleLesson5(p) {
+      if (l5Phase === 'walls') {
         const snappedP = snapToEndpoint(p);
-        roofSketchPoints.push(snappedP.clone());
-        addSketchPoint(snappedP);
-
-        if (roofSketchPoints.length > 1) {
-          addSketchLine(roofSketchPoints[roofSketchPoints.length - 2], snappedP);
-        }
-
-        document.getElementById('l4-phase-label').textContent = `Sketch Roof (${roofSketchPoints.length}/4)`;
-
-        const remaining = 4 - roofSketchPoints.length;
-        if (remaining > 0) {
-          updateInstruction(`Corner ${roofSketchPoints.length} placed. Click ${remaining} more corner${remaining > 1 ? 's' : ''}`);
-          setStatus(`Roof: ${roofSketchPoints.length}/4 corners`);
-        }
-
-        if (roofSketchPoints.length >= 4) {
-          addSketchLine(roofSketchPoints[3], roofSketchPoints[0]);
-          const roof = createRoofMesh(roofSketchPoints);
-          if (roof) {
-            scene.add(roof);
-            placedElements.push(roof);
+        if (!wallStartPoint) {
+          wallStartPoint = snappedP.clone();
+          updateInstruction('Click to place the end point of your wall');
+          setStatus('Placing wall...');
+        } else {
+          if (wallPreviewMesh) { scene.remove(wallPreviewMesh); wallPreviewMesh = null; }
+          hideMeasureBar();
+          const wall = createWallMesh(wallStartPoint, snappedP);
+          if (wall) {
+            scene.add(wall); placedElements.push(wall); l5Elements.push(wall);
+            l5Walls.push(wall); l5WallsPlaced++;
             updateElementsList();
+            document.getElementById('prop-length').style.display = 'none';
+            document.getElementById('l5-progress-label').textContent = `Walls: ${l5WallsPlaced}/${L5_REQUIRED_WALLS}`;
+            wallStartPoint = null;
+
+            if (l5WallsPlaced >= L5_REQUIRED_WALLS) {
+              l5Phase = 'door';
+              document.getElementById('l5-progress-label').textContent = 'Place door';
+              updateInstruction('All 4 walls placed. Now click on a wall to place the door');
+              setStatus('Walls done — place door');
+            } else {
+              updateInstruction(`Wall ${l5WallsPlaced}/${L5_REQUIRED_WALLS} placed. Place the next wall`);
+              setStatus(`${l5WallsPlaced}/${L5_REQUIRED_WALLS} walls`);
+            }
           }
-          roofSketchLines.forEach(obj => scene.remove(obj));
-          roofSketchLines = [];
-          clearRoofGuides();
-          document.getElementById('l4-phase-label').textContent = 'Complete';
-          scoreAndComplete();
         }
+      } else if (l5Phase === 'door') {
+        const nearest = findNearestWall(p);
+        if (!nearest.wall || nearest.distance > 0.8) { updateInstruction('Click closer to a wall to place the door'); setStatus('No wall nearby'); return; }
+        const ws = nearest.wall.userData.start, we = nearest.wall.userData.end;
+        const door = createDoorMesh(nearest.point, Math.atan2(we.z - ws.z, we.x - ws.x));
+        scene.add(door); placedElements.push(door); l5Elements.push(door);
+        updateElementsList();
+        l5Phase = 'roof';
+        document.getElementById('l5-progress-label').textContent = 'Sketch roof (0/4)';
+        updateInstruction('Door placed. Click 4 corners to sketch the roof boundary');
+        setStatus('Door done — sketch roof');
+      } else if (l5Phase === 'roof') {
+        handleRoofClick(p);
+      }
+    }
+
+    // Shared roof click handler for L4 and L5
+    function handleRoofClick(p) {
+      const snappedP = snapToEndpoint(p);
+      roofSketchPoints.push(snappedP.clone());
+      addSketchPoint(snappedP);
+      if (roofSketchPoints.length > 1) addSketchLine(roofSketchPoints[roofSketchPoints.length - 2], snappedP);
+
+      if (currentLesson === 4) document.getElementById('l4-phase-label').textContent = `Sketch Roof (${roofSketchPoints.length}/4)`;
+      if (currentLesson === 5) document.getElementById('l5-progress-label').textContent = `Sketch roof (${roofSketchPoints.length}/4)`;
+
+      const remaining = 4 - roofSketchPoints.length;
+      if (remaining > 0) {
+        updateInstruction(`Corner ${roofSketchPoints.length} placed. Click ${remaining} more corner${remaining > 1 ? 's' : ''}`);
+        setStatus(`Roof: ${roofSketchPoints.length}/4 corners`);
+      }
+      if (roofSketchPoints.length >= 4) {
+        addSketchLine(roofSketchPoints[3], roofSketchPoints[0]);
+        const roof = createRoofMesh(roofSketchPoints);
+        if (roof) {
+          scene.add(roof); placedElements.push(roof);
+          if (currentLesson === 5) l5Elements.push(roof);
+          updateElementsList();
+        }
+        roofSketchLines.forEach(obj => scene.remove(obj));
+        roofSketchLines = [];
+        clearRoofGuides();
+        if (currentLesson === 4) document.getElementById('l4-phase-label').textContent = 'Complete';
+        if (currentLesson === 5) { l5Phase = 'done'; document.getElementById('l5-progress-label').textContent = 'Complete'; }
+        scoreAndComplete();
       }
     }
 
     // ── Mouse move for wall preview ───────────────────────────────
     canvas.addEventListener('mousemove', (e) => {
-      if (wallStartPoint && currentLesson >= 1 && currentLesson <= 3) {
+      if (wallStartPoint && (currentLesson <= 3 || (currentLesson === 5 && l5Phase === 'walls'))) {
         const p = getGroundPoint(e);
         if (p) createWallPreview(wallStartPoint, p);
       }
     });
 
-    // ── Best-match a placed wall to its closest target ──────────
-    function findBestTargetMatch(wall, targets) {
-      const ws = wall.userData.start;
-      const we = wall.userData.end;
-      const actualLen = ws.distanceTo(we);
-      let bestScore = -1, bestIdx = 0, bestResult = null;
-
-      targets.forEach((t, i) => {
-        const ts = new THREE.Vector3(t.start[0], 0, t.start[1]);
-        const te = new THREE.Vector3(t.end[0], 0, t.end[1]);
-        const d1 = ws.distanceTo(ts) + we.distanceTo(te);
-        const d2 = ws.distanceTo(te) + we.distanceTo(ts);
-        const posErr = Math.min(d1, d2);
-        const sc = Math.max(0, 100 - posErr * 70);
-        if (sc > bestScore) {
-          bestScore = sc;
-          bestIdx = i;
-          bestResult = t;
-        }
-      });
-
-      const targetLen = new THREE.Vector3(bestResult.start[0], 0, bestResult.start[1])
-        .distanceTo(new THREE.Vector3(bestResult.end[0], 0, bestResult.end[1]));
-      return { idx: bestIdx, target: bestResult, targetLenMM: Math.round(targetLen * 1000) };
-    }
-
     // ── Scoring ───────────────────────────────────────────────────
     const LESSON_TARGETS = {
       1: { type: 'wall', start: [0, 0], end: [3, 0] },
       2: { type: 'wall', start: [0, 0], end: [0, 3] },
-      3: { type: 'walls', walls: [
-          { start: [3, 0], end: [3, 3] },
-          { start: [0, 3], end: [3, 3] }
-        ]},
+      3: { type: 'walls', walls: [{ start: [3, 0], end: [3, 3] }, { start: [0, 3], end: [3, 3] }] },
       4: {
         type: 'door_and_roof',
-        roofCorners: [[0, 0], [3, 0], [3, 3], [0, 3]],
-        roofArea: 9.0,
-        wallSegments: [
-          { a: [0, 0], b: [3, 0] },
-          { a: [0, 0], b: [0, 3] },
-          { a: [3, 0], b: [3, 3] },
-          { a: [0, 3], b: [3, 3] }
-        ]
+        roofCorners: [[0,0],[3,0],[3,3],[0,3]], roofArea: 9.0,
+        wallSegments: [{ a:[0,0], b:[3,0] }, { a:[0,0], b:[0,3] }, { a:[3,0], b:[3,3] }, { a:[0,3], b:[3,3] }]
+      },
+      5: {
+        type: 'final_challenge',
+        walls: [{ start:[0,0], end:[3,0] }, { start:[0,0], end:[0,3] }, { start:[3,0], end:[3,3] }, { start:[0,3], end:[3,3] }],
+        roofCorners: [[0,0],[3,0],[3,3],[0,3]], roofArea: 9.0,
+        wallSegments: [{ a:[0,0], b:[3,0] }, { a:[0,0], b:[0,3] }, { a:[3,0], b:[3,3] }, { a:[0,3], b:[3,3] }],
+        doorTarget: { wall: { a: [0, 0], b: [3, 0] }, position: [1.5, 0] }
       }
     };
 
@@ -996,62 +992,49 @@
     }
 
     function scoreWall(wall, target) {
-      const ws = wall.userData.start;
-      const we = wall.userData.end;
+      const ws = wall.userData.start, we = wall.userData.end;
       const ts = new THREE.Vector3(target.start[0], 0, target.start[1]);
       const te = new THREE.Vector3(target.end[0], 0, target.end[1]);
-
       const d1s = ws.distanceTo(ts), d1e = we.distanceTo(te);
       const d2s = ws.distanceTo(te), d2e = we.distanceTo(ts);
       let startDist, endDist;
-      if (d1s + d1e <= d2s + d2e) {
-        startDist = d1s; endDist = d1e;
-      } else {
-        startDist = d2s; endDist = d2e;
-      }
-
+      if (d1s + d1e <= d2s + d2e) { startDist = d1s; endDist = d1e; }
+      else { startDist = d2s; endDist = d2e; }
       const posScore = (scoreEndpoint(startDist) + scoreEndpoint(endDist)) / 2;
-
-      const targetLen = ts.distanceTo(te);
-      const actualLen = ws.distanceTo(we);
+      const targetLen = ts.distanceTo(te), actualLen = ws.distanceTo(we);
       const lenDiff = actualLen - targetLen;
-      const lenRatio = Math.abs(lenDiff) / targetLen;
-      const lenScore = Math.max(0, Math.round(100 * (1 - lenRatio * 3)));
-
-      const targetDx = Math.abs(target.end[0] - target.start[0]);
-      const targetDz = Math.abs(target.end[1] - target.start[1]);
-      const isTargetAxisAligned = targetDx < 0.01 || targetDz < 0.01;
+      const lenScore = Math.max(0, Math.round(100 * (1 - Math.abs(lenDiff) / targetLen * 3)));
+      const targetDx = Math.abs(target.end[0] - target.start[0]), targetDz = Math.abs(target.end[1] - target.start[1]);
       let alignScore = 100;
-      if (isTargetAxisAligned) {
-        const wallDx = Math.abs(ws.x - we.x);
-        const wallDz = Math.abs(ws.z - we.z);
-        if (targetDx < 0.01) {
-          alignScore = Math.max(0, Math.round(100 - wallDx * 150));
-        } else {
-          alignScore = Math.max(0, Math.round(100 - wallDz * 150));
-        }
+      if (targetDx < 0.01 || targetDz < 0.01) {
+        const wallDx = Math.abs(ws.x - we.x), wallDz = Math.abs(ws.z - we.z);
+        alignScore = targetDx < 0.01 ? Math.max(0, Math.round(100 - wallDx * 150)) : Math.max(0, Math.round(100 - wallDz * 150));
       }
-
       const total = Math.round(posScore * 0.50 + lenScore * 0.30 + alignScore * 0.20);
-      return {
-        total, posScore: Math.round(posScore), lenScore: Math.round(lenScore),
-        alignScore: Math.round(alignScore),
+      return { total, posScore: Math.round(posScore), lenScore: Math.round(lenScore), alignScore: Math.round(alignScore),
         startDist: Math.round(startDist * 1000), endDist: Math.round(endDist * 1000),
-        lenErrorMM: Math.round(Math.abs(lenDiff) * 1000),
-        lenDiffMM: Math.round(lenDiff * 1000),
-        targetLenMM: Math.round(targetLen * 1000),
-        actualLenMM: Math.round(actualLen * 1000)
-      };
+        lenErrorMM: Math.round(Math.abs(lenDiff) * 1000), lenDiffMM: Math.round(lenDiff * 1000),
+        targetLenMM: Math.round(targetLen * 1000), actualLenMM: Math.round(actualLen * 1000) };
+    }
+
+    function findBestTargetMatch(wall, targets) {
+      const ws = wall.userData.start, we = wall.userData.end;
+      let bestScore = -1, bestIdx = 0, bestResult = null;
+      targets.forEach((t, i) => {
+        const ts = new THREE.Vector3(t.start[0], 0, t.start[1]), te = new THREE.Vector3(t.end[0], 0, t.end[1]);
+        const d1 = ws.distanceTo(ts) + we.distanceTo(te), d2 = ws.distanceTo(te) + we.distanceTo(ts);
+        const sc = Math.max(0, 100 - Math.min(d1, d2) * 70);
+        if (sc > bestScore) { bestScore = sc; bestIdx = i; bestResult = t; }
+      });
+      const targetLen = new THREE.Vector3(bestResult.start[0], 0, bestResult.start[1]).distanceTo(new THREE.Vector3(bestResult.end[0], 0, bestResult.end[1]));
+      return { idx: bestIdx, target: bestResult, targetLenMM: Math.round(targetLen * 1000) };
     }
 
     function pointToSegmentDist(px, pz, ax, az, bx, bz) {
-      const dx = bx - ax, dz = bz - az;
-      const lenSq = dx * dx + dz * dz;
+      const dx = bx - ax, dz = bz - az, lenSq = dx * dx + dz * dz;
       if (lenSq < 0.0001) return Math.sqrt((px - ax) ** 2 + (pz - az) ** 2);
-      let t = ((px - ax) * dx + (pz - az) * dz) / lenSq;
-      t = Math.max(0, Math.min(1, t));
-      const projX = ax + t * dx, projZ = az + t * dz;
-      return Math.sqrt((px - projX) ** 2 + (pz - projZ) ** 2);
+      let t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / lenSq));
+      return Math.sqrt((px - (ax + t * dx)) ** 2 + (pz - (az + t * dz)) ** 2);
     }
 
     function scoreDoor(doorPos, wallSegments) {
@@ -1061,73 +1044,72 @@
         if (d < minDist) minDist = d;
       }
       if (minDist < 0.15) return { score: 100, distMM: Math.round(minDist * 1000) };
+      return { score: Math.max(0, Math.round(100 - (minDist - 0.15) * 120)), distMM: Math.round(minDist * 1000) };
+    }
+
+    // L5 door scoring: checks correct wall AND position accuracy
+    function scoreDoorChallenge(doorPos, doorTarget) {
+      const tw = doorTarget.wall;
+      const distToTargetWall = pointToSegmentDist(doorPos.x, doorPos.z, tw.a[0], tw.a[1], tw.b[0], tw.b[1]);
+      const onCorrectWall = distToTargetWall <= WALL_THICKNESS;
+
+      if (!onCorrectWall) {
+        return { score: 0, onCorrectWall: false, wallDistMM: Math.round(distToTargetWall * 1000), posDist: 0, posDistMM: 0 };
+      }
+
+      const tp = new THREE.Vector3(doorTarget.position[0], 0, doorTarget.position[1]);
+      const posDist = Math.sqrt((doorPos.x - tp.x) ** 2 + (doorPos.z - tp.z) ** 2);
+      const posScore = scoreEndpoint(posDist);
+
       return {
-        score: Math.max(0, Math.round(100 - (minDist - 0.15) * 120)),
-        distMM: Math.round(minDist * 1000)
+        score: posScore,
+        onCorrectWall: true,
+        wallDistMM: Math.round(distToTargetWall * 1000),
+        posDistMM: Math.round(posDist * 1000)
       };
     }
 
     function scoreRoof(placedPoints, target) {
       const idealCorners = target.roofCorners.map(c => new THREE.Vector2(c[0], c[1]));
-      const used = new Set();
-      let totalCornerDist = 0;
-      const cornerScores = [];
-
+      const used = new Set(); let totalCornerDist = 0; const cornerScores = [];
       for (const pp of placedPoints) {
         const p2 = new THREE.Vector2(pp.x, pp.z);
         let bestDist = Infinity, bestIdx = -1;
-        idealCorners.forEach((ic, idx) => {
-          if (!used.has(idx)) {
-            const d = p2.distanceTo(ic);
-            if (d < bestDist) { bestDist = d; bestIdx = idx; }
-          }
-        });
+        idealCorners.forEach((ic, idx) => { if (!used.has(idx)) { const d = p2.distanceTo(ic); if (d < bestDist) { bestDist = d; bestIdx = idx; } } });
         if (bestIdx >= 0) used.add(bestIdx);
-        totalCornerDist += bestDist;
-        cornerScores.push(scoreEndpoint(bestDist));
+        totalCornerDist += bestDist; cornerScores.push(scoreEndpoint(bestDist));
       }
-
-      const cornerScore = cornerScores.length > 0
-        ? Math.round(cornerScores.reduce((a, b) => a + b, 0) / cornerScores.length) : 0;
-
+      const cornerScore = cornerScores.length > 0 ? Math.round(cornerScores.reduce((a, b) => a + b, 0) / cornerScores.length) : 0;
       const actualArea = Math.abs(shoelaceArea(placedPoints));
-      const areaRatio = Math.abs(actualArea - target.roofArea) / target.roofArea;
-      const areaScore = Math.max(0, Math.round(100 * (1 - areaRatio * 4)));
-
+      const areaScore = Math.max(0, Math.round(100 * (1 - Math.abs(actualArea - target.roofArea) / target.roofArea * 4)));
       let angleScore = 100;
       if (placedPoints.length === 4) {
-        let anglePenalty = 0;
+        let penalty = 0;
         for (let i = 0; i < 4; i++) {
-          const a = placedPoints[i];
-          const b = placedPoints[(i + 1) % 4];
-          const c = placedPoints[(i + 2) % 4];
-          const v1 = new THREE.Vector2(a.x - b.x, a.z - b.z);
-          const v2 = new THREE.Vector2(c.x - b.x, c.z - b.z);
-          const dot = v1.dot(v2);
-          const cross = Math.abs(v1.x * v2.y - v1.y * v2.x);
-          const angle = Math.atan2(cross, Math.abs(dot));
-          anglePenalty += Math.abs(angle - Math.PI / 2) * (180 / Math.PI);
+          const a = placedPoints[i], b = placedPoints[(i+1)%4], c = placedPoints[(i+2)%4];
+          const v1 = new THREE.Vector2(a.x-b.x, a.z-b.z), v2 = new THREE.Vector2(c.x-b.x, c.z-b.z);
+          penalty += Math.abs(Math.atan2(Math.abs(v1.x*v2.y-v1.y*v2.x), Math.abs(v1.dot(v2))) - Math.PI/2) * (180/Math.PI);
         }
-        angleScore = Math.max(0, Math.round(100 - anglePenalty * 2));
+        angleScore = Math.max(0, Math.round(100 - penalty * 2));
       }
-
       const total = Math.round(cornerScore * 0.45 + areaScore * 0.30 + angleScore * 0.25);
-      return {
-        total, cornerScore, areaScore, angleScore,
-        actualArea: Math.round(actualArea * 100) / 100,
-        avgCornerDistMM: Math.round((totalCornerDist / Math.max(1, placedPoints.length)) * 1000)
-      };
+      return { total, cornerScore, areaScore, angleScore, actualArea: Math.round(actualArea * 100) / 100,
+        avgCornerDistMM: Math.round((totalCornerDist / Math.max(1, placedPoints.length)) * 1000) };
     }
 
     function shoelaceArea(points) {
-      let area = 0;
-      const n = points.length;
-      for (let i = 0; i < n; i++) {
-        const j = (i + 1) % n;
-        area += points[i].x * points[j].z;
-        area -= points[j].x * points[i].z;
-      }
+      let area = 0; const n = points.length;
+      for (let i = 0; i < n; i++) { const j = (i+1) % n; area += points[i].x * points[j].z - points[j].x * points[i].z; }
       return area / 2;
+    }
+
+    function checkRoomClosure(walls) {
+      if (walls.length < 4) return 0;
+      const ideal = [[0,0,0],[3,0,0],[3,0,3],[0,0,3]].map(c => new THREE.Vector3(...c));
+      const eps = []; walls.forEach(w => { eps.push(w.userData.start.clone()); eps.push(w.userData.end.clone()); });
+      let td = 0;
+      for (const corner of ideal) { let md = Infinity; for (const ep of eps) { const d = corner.distanceTo(ep); if (d < md) md = d; } td += md; }
+      return Math.max(0, Math.round(100 - (td / 4) * 80));
     }
 
     // ── Educational Tip Generator ─────────────────────────────────
@@ -1135,216 +1117,163 @@
       if (lesson === 1 || lesson === 2) {
         const r = scoreData;
         if (r.total >= 95) return 'Perfect placement. In Revit, precise endpoints are critical for wall joins and room boundaries.';
-        const tips = [];
-        if (r.lenScore < 80) {
-          const dir = r.lenDiffMM > 0 ? 'long' : 'short';
-          tips.push(`Your wall was ${Math.abs(r.lenDiffMM)} mm too ${dir} (${r.actualLenMM} mm vs ${r.targetLenMM} mm target). Use the live measurement bar to check length before clicking.`);
-        }
-        if (r.posScore < 80) {
-          tips.push(`Start/end points were off by ${r.startDist} mm and ${r.endDist} mm. In Revit, use endpoint snapping (green cursor) to lock onto existing geometry.`);
-        }
-        if (r.alignScore < 80) {
-          tips.push('Wall is not axis-aligned. In Revit, hold Shift while drawing to constrain to horizontal/vertical.');
-        }
-        return tips.length > 0 ? tips[0] : 'Good work. Try to match the target coordinates exactly for a higher score.';
+        if (r.lenScore < 80) { const dir = r.lenDiffMM > 0 ? 'long' : 'short'; return `Your wall was ${Math.abs(r.lenDiffMM)} mm too ${dir} (${r.actualLenMM} mm vs ${r.targetLenMM} mm target). Use the live measurement bar to check length before clicking.`; }
+        if (r.posScore < 80) return `Start/end points were off by ${r.startDist} mm and ${r.endDist} mm. Use endpoint snapping (green cursor) to lock onto existing geometry.`;
+        if (r.alignScore < 80) return 'Wall is not axis-aligned. In Revit, hold Shift while drawing to constrain to horizontal/vertical.';
+        return 'Good work. Try to match the target coordinates exactly for a higher score.';
       }
-      if (lesson === 3) {
-        return scoreData >= 90
-          ? 'Clean room enclosure. In Revit, enclosed rooms are needed before placing floors, ceilings, or computing areas.'
-          : 'Make sure each wall connects to the existing corners. Use the green snap indicator to align endpoints with the room perimeter.';
-      }
-      if (lesson === 4) {
-        return 'In Revit, doors are wall-hosted elements and roofs are sketched by tracing the building footprint. Both snap to existing geometry.';
+      if (lesson === 3) return scoreData >= 90 ? 'Clean room enclosure. Enclosed rooms are needed before placing floors, ceilings, or computing areas.' : 'Make sure each wall connects to the existing corners. Use the green snap indicator to align endpoints.';
+      if (lesson === 4) return 'In Revit, doors are wall-hosted elements and roofs are sketched by tracing the building footprint.';
+      if (lesson === 5) {
+        if (scoreData >= PASS_THRESHOLD) return 'You passed the Final Challenge! You demonstrated you can build a complete room from scratch — walls, door, and roof.';
+        return 'Review the reference image and try again. Focus on placing walls at the exact coordinates, snapping the door onto a wall, and tracing the roof at the room corners.';
       }
       return '';
     }
 
     function scoreAndComplete() {
       const target = LESSON_TARGETS[currentLesson];
-      let score = 0;
-      let details = [];
-      let tipData = null;
+      let score = 0, details = [], tipData = null;
 
       if (currentLesson === 1 || currentLesson === 2) {
         const lastWall = placedElements.filter(el => el.userData?.type === 'wall').slice(-1)[0];
         if (lastWall) {
           const r = scoreWall(lastWall, target);
-          score = r.total;
-          tipData = r;
+          score = r.total; tipData = r;
           details.push({ label: 'Endpoint accuracy', value: `${r.posScore}%`, sub: `Start: ${r.startDist} mm off · End: ${r.endDist} mm off`, color: r.posScore >= PASS_THRESHOLD ? '#34D399' : r.posScore >= 60 ? '#F5620F' : '#EF4444' });
           details.push({ label: 'Length accuracy', value: `${r.lenScore}%`, sub: `${r.actualLenMM} mm placed (target: ${r.targetLenMM} mm)`, color: r.lenScore >= PASS_THRESHOLD ? '#34D399' : r.lenScore >= 60 ? '#F5620F' : '#EF4444' });
           details.push({ label: 'Axis alignment', value: `${r.alignScore}%`, color: r.alignScore >= PASS_THRESHOLD ? '#34D399' : r.alignScore >= 60 ? '#F5620F' : '#EF4444' });
         }
-
       } else if (currentLesson === 3) {
         if (l3Walls.length >= L3_REQUIRED_WALLS) {
-          // Best-match each placed wall to its closest target (order-independent)
-          const targetLabels = { 0: 'East wall (3000,0 → 3000,3000)', 1: 'North wall (0,3000 → 3000,3000)' };
-          const usedTargets = new Set();
-          let totalScore = 0;
-
-          // Sort walls by best match to avoid conflicts
-          const matches = l3Walls.map(wall => {
-            const best = findBestTargetMatch(wall, target.walls);
-            return { wall, ...best };
-          });
-          // Greedy assign: best-scoring first
-          matches.sort((a, b) => {
-            const sa = scoreWall(a.wall, a.target).total;
-            const sb = scoreWall(b.wall, b.target).total;
-            return sb - sa;
-          });
-
+          const targetLabels = { 0: 'East wall', 1: 'North wall' };
+          const usedTargets = new Set(); let totalScore = 0;
+          const matches = l3Walls.map(wall => ({ wall, ...findBestTargetMatch(wall, target.walls) }));
+          matches.sort((a, b) => scoreWall(b.wall, b.target).total - scoreWall(a.wall, a.target).total);
           for (const m of matches) {
-            let t = m.target;
-            let tIdx = m.idx;
-            // If this target is already taken, use the other one
-            if (usedTargets.has(tIdx)) {
-              tIdx = tIdx === 0 ? 1 : 0;
-              t = target.walls[tIdx];
-            }
+            let t = m.target, tIdx = m.idx;
+            if (usedTargets.has(tIdx)) { tIdx = tIdx === 0 ? 1 : 0; t = target.walls[tIdx]; }
             usedTargets.add(tIdx);
-
-            const r = scoreWall(m.wall, t);
-            totalScore += r.total;
-            const label = targetLabels[tIdx] || `Wall ${tIdx + 1}`;
-            details.push({ label, value: `${r.total}%`, sub: `${r.actualLenMM} mm placed (target: ${r.targetLenMM} mm)`, color: r.total >= PASS_THRESHOLD ? '#34D399' : r.total >= 60 ? '#F5620F' : '#EF4444' });
-
-            // Reset wall color based on final score
+            const r = scoreWall(m.wall, t); totalScore += r.total;
+            details.push({ label: targetLabels[tIdx], value: `${r.total}%`, sub: `${r.actualLenMM} mm (target: ${r.targetLenMM} mm)`, color: r.total >= PASS_THRESHOLD ? '#34D399' : r.total >= 60 ? '#F5620F' : '#EF4444' });
             m.wall.material.color.setHex(r.total >= PASS_THRESHOLD ? 0xCCCCCC : r.total >= 60 ? 0xE8C86A : 0xEF6B6B);
           }
-
           score = Math.round(totalScore / L3_REQUIRED_WALLS);
-
-          const allWalls = placedElements.filter(el => el.userData?.type === 'wall');
-          const closureScore = checkRoomClosure(allWalls);
+          const closureScore = checkRoomClosure(placedElements.filter(el => el.userData?.type === 'wall'));
           details.push({ label: 'Room closure', value: `${closureScore}%`, color: closureScore >= PASS_THRESHOLD ? '#34D399' : closureScore >= 60 ? '#F5620F' : '#EF4444' });
           score = Math.round(score * 0.75 + closureScore * 0.25);
           tipData = score;
         }
-
       } else if (currentLesson === 4) {
         const doorEl = placedElements.find(el => el.userData?.type === 'door');
         const roofEl = placedElements.find(el => el.userData?.type === 'roof');
+        let doorScore = 0, roofScore = 0;
+        if (doorEl) { const dr = scoreDoor(doorEl.userData.position, target.wallSegments); doorScore = dr.score; details.push({ label: 'Door on-wall', value: `${dr.score}%`, sub: `${dr.distMM} mm from wall`, color: dr.score >= PASS_THRESHOLD ? '#34D399' : dr.score >= 60 ? '#F5620F' : '#EF4444' }); }
+        else details.push({ label: 'Door placed', value: 'No', color: '#EF4444' });
+        if (roofEl) { const rr = scoreRoof(roofEl.userData.points, target); roofScore = rr.total; details.push({ label: 'Roof corners', value: `${rr.cornerScore}%`, sub: `Avg ${rr.avgCornerDistMM} mm off`, color: rr.cornerScore >= PASS_THRESHOLD ? '#34D399' : rr.cornerScore >= 60 ? '#F5620F' : '#EF4444' }); details.push({ label: 'Roof area', value: `${rr.areaScore}%`, sub: `${rr.actualArea} m² (target: 9.0)`, color: rr.areaScore >= PASS_THRESHOLD ? '#34D399' : rr.areaScore >= 60 ? '#F5620F' : '#EF4444' }); details.push({ label: 'Shape', value: `${rr.angleScore}%`, color: rr.angleScore >= PASS_THRESHOLD ? '#34D399' : rr.angleScore >= 60 ? '#F5620F' : '#EF4444' }); }
+        else details.push({ label: 'Roof', value: 'No', color: '#EF4444' });
+        score = Math.round(doorScore * 0.30 + roofScore * 0.70);
+        tipData = score;
 
+      // ── Lesson 5 scoring: reuses all existing scorers ───────────
+      } else if (currentLesson === 5) {
+        // Score all 4 walls (best-match to targets, order-independent)
+        const usedTargets = new Set(); let wallTotal = 0;
+        const wallMatches = l5Walls.map(wall => ({ wall, ...findBestTargetMatch(wall, target.walls) }));
+        wallMatches.sort((a, b) => scoreWall(b.wall, b.target).total - scoreWall(a.wall, a.target).total);
+        const wallNames = ['South', 'West', 'East', 'North'];
+        for (const m of wallMatches) {
+          let t = m.target, tIdx = m.idx;
+          if (usedTargets.has(tIdx)) { for (let j = 0; j < target.walls.length; j++) { if (!usedTargets.has(j)) { tIdx = j; t = target.walls[j]; break; } } }
+          usedTargets.add(tIdx);
+          const r = scoreWall(m.wall, t); wallTotal += r.total;
+          details.push({ label: `${wallNames[tIdx]} wall`, value: `${r.total}%`, sub: `${r.actualLenMM} mm (target: ${r.targetLenMM} mm)`, color: r.total >= PASS_THRESHOLD ? '#34D399' : r.total >= 60 ? '#F5620F' : '#EF4444' });
+        }
+        const wallAvg = Math.round(wallTotal / L5_REQUIRED_WALLS);
+
+        const doorEl = l5Elements.find(el => el.userData?.type === 'door');
         let doorScore = 0;
         if (doorEl) {
-          const dr = scoreDoor(doorEl.userData.position, target.wallSegments);
+          const dr = scoreDoorChallenge(doorEl.userData.position, target.doorTarget);
           doorScore = dr.score;
-          details.push({ label: 'Door on-wall accuracy', value: `${dr.score}%`, sub: `${dr.distMM} mm from wall centreline`, color: dr.score >= PASS_THRESHOLD ? '#34D399' : dr.score >= 60 ? '#F5620F' : '#EF4444' });
-        } else {
-          details.push({ label: 'Door placed', value: 'No', color: '#EF4444' });
-        }
+          if (!dr.onCorrectWall) {
+            details.push({ label: 'Door placement', value: '0%', sub: 'Wrong wall — should be on south wall (0,0)→(3000,0)', color: '#EF4444' });
+          } else {
+            details.push({ label: 'Door placement', value: `${dr.score}%`, sub: `${dr.posDistMM} mm from target position (1500, 0)`, color: dr.score >= PASS_THRESHOLD ? '#34D399' : dr.score >= 60 ? '#F5620F' : '#EF4444' });
+          }
+        } else details.push({ label: 'Door', value: 'Missing', color: '#EF4444' });
 
+        const roofEl = l5Elements.find(el => el.userData?.type === 'roof');
         let roofScore = 0;
-        if (roofEl) {
-          const rr = scoreRoof(roofEl.userData.points, target);
-          roofScore = rr.total;
-          details.push({ label: 'Roof corner accuracy', value: `${rr.cornerScore}%`, sub: `Avg ${rr.avgCornerDistMM} mm from ideal corners`, color: rr.cornerScore >= PASS_THRESHOLD ? '#34D399' : rr.cornerScore >= 60 ? '#F5620F' : '#EF4444' });
-          details.push({ label: 'Roof area', value: `${rr.areaScore}%`, sub: `${rr.actualArea} m² (target: 9.0 m²)`, color: rr.areaScore >= PASS_THRESHOLD ? '#34D399' : rr.areaScore >= 60 ? '#F5620F' : '#EF4444' });
-          details.push({ label: 'Shape regularity', value: `${rr.angleScore}%`, color: rr.angleScore >= PASS_THRESHOLD ? '#34D399' : rr.angleScore >= 60 ? '#F5620F' : '#EF4444' });
-        } else {
-          details.push({ label: 'Roof sketched', value: 'No', color: '#EF4444' });
-        }
+        if (roofEl) { const rr = scoreRoof(roofEl.userData.points, target); roofScore = rr.total; details.push({ label: 'Roof accuracy', value: `${rr.total}%`, sub: `${rr.actualArea} m² · corners avg ${rr.avgCornerDistMM} mm off`, color: rr.total >= PASS_THRESHOLD ? '#34D399' : rr.total >= 60 ? '#F5620F' : '#EF4444' }); }
+        else details.push({ label: 'Roof', value: 'Missing', color: '#EF4444' });
 
-        score = Math.round(doorScore * 0.30 + roofScore * 0.70);
+        const closureScore = checkRoomClosure(l5Walls);
+        details.push({ label: 'Room closure', value: `${closureScore}%`, color: closureScore >= PASS_THRESHOLD ? '#34D399' : closureScore >= 60 ? '#F5620F' : '#EF4444' });
+
+        score = Math.round(wallAvg * 0.40 + doorScore * 0.15 + roofScore * 0.25 + closureScore * 0.20);
         tipData = score;
       }
 
       lessonScores[currentLesson - 1] = score;
       lessonsCompleted[currentLesson - 1] = true;
-
-      const tip = generateTip(currentLesson, tipData);
-      showResults(score, details, tip);
+      showResults(score, details, generateTip(currentLesson, tipData));
       updateProgress();
-    }
-
-    function checkRoomClosure(walls) {
-      if (walls.length < 4) return 0;
-      const idealCorners = [
-        new THREE.Vector3(0, 0, 0), new THREE.Vector3(3, 0, 0),
-        new THREE.Vector3(3, 0, 3), new THREE.Vector3(0, 0, 3)
-      ];
-      const endpoints = [];
-      walls.forEach(w => { endpoints.push(w.userData.start.clone()); endpoints.push(w.userData.end.clone()); });
-      let totalDist = 0;
-      for (const corner of idealCorners) {
-        let minDist = Infinity;
-        for (const ep of endpoints) {
-          const d = corner.distanceTo(ep);
-          if (d < minDist) minDist = d;
-        }
-        totalDist += minDist;
-      }
-      return Math.max(0, Math.round(100 - (totalDist / 4) * 80));
     }
 
     // ── Results Panel ─────────────────────────────────────────────
     function showResults(score, details, tip) {
-      const titles = {
-        1: 'Wall Placed!', 2: 'Second Wall Done!',
-        3: 'Room Enclosed!', 4: 'Door & Roof Complete!'
-      };
-
+      const titles = { 1: 'Wall Placed!', 2: 'Second Wall Done!', 3: 'Room Enclosed!', 4: 'Door & Roof Complete!', 5: 'Final Challenge' };
       document.getElementById('result-title').textContent = titles[currentLesson] || 'Complete!';
       document.getElementById('score-value').textContent = score + '%';
 
+      // XP display for L5
+      const xp = currentLesson === 5 ? score * 10 : 0;
+      document.getElementById('score-label').textContent = currentLesson === 5 ? `Score · ${xp} XP` : 'Score';
+
       let feedbackText;
-      if (score >= 95) feedbackText = 'Outstanding precision!';
-      else if (score >= PASS_THRESHOLD) feedbackText = 'Good work — passed!';
+      if (currentLesson === 5 && score < PASS_THRESHOLD) feedbackText = `Need ${PASS_THRESHOLD}%+ to pass — try again`;
+      else if (score >= 95) feedbackText = 'Outstanding precision!';
+      else if (score >= PASS_THRESHOLD) feedbackText = currentLesson === 5 ? `Passed! ${xp} XP earned` : 'Good work — passed!';
       else if (score >= 60) feedbackText = 'Close, but below 80% threshold';
       else feedbackText = 'Needs improvement — try again';
       document.getElementById('score-feedback').textContent = feedbackText;
 
       const badge = document.getElementById('score-badge');
       const scoreVal = document.getElementById('score-value');
-      if (score >= 95) {
-        badge.style.background = 'rgba(52, 211, 153, 0.15)';
-        scoreVal.style.color = '#34D399';
-      } else if (score >= PASS_THRESHOLD) {
-        badge.style.background = 'rgba(52, 211, 153, 0.10)';
-        scoreVal.style.color = '#34D399';
-      } else if (score >= 60) {
-        badge.style.background = 'rgba(245, 98, 15, 0.12)';
-        scoreVal.style.color = '#F5620F';
-      } else {
-        badge.style.background = 'rgba(239, 68, 68, 0.12)';
-        scoreVal.style.color = '#EF4444';
-      }
+      if (score >= 95) { badge.style.background = 'rgba(52, 211, 153, 0.15)'; scoreVal.style.color = '#34D399'; }
+      else if (score >= PASS_THRESHOLD) { badge.style.background = 'rgba(52, 211, 153, 0.10)'; scoreVal.style.color = '#34D399'; }
+      else if (score >= 60) { badge.style.background = 'rgba(245, 98, 15, 0.12)'; scoreVal.style.color = '#F5620F'; }
+      else { badge.style.background = 'rgba(239, 68, 68, 0.12)'; scoreVal.style.color = '#EF4444'; }
 
-      const detailsEl = document.getElementById('score-details');
-      detailsEl.innerHTML = details.map(d => {
-        const colorStyle = d.color ? ` style="color: ${d.color}"` : '';
-        let html = `<div class="flex items-center justify-between text-xs">
-          <span class="text-dark-text">${d.label}</span>
-          <span class="font-medium"${colorStyle}>${d.value}</span>
-        </div>`;
-        if (d.sub) {
-          html += `<div class="text-[10px] text-dark-text pl-1 mb-1" style="opacity: 0.7;">${d.sub}</div>`;
-        }
+      document.getElementById('score-details').innerHTML = details.map(d => {
+        const cs = d.color ? ` style="color: ${d.color}"` : '';
+        let html = `<div class="flex items-center justify-between text-xs"><span class="text-dark-text">${d.label}</span><span class="font-medium"${cs}>${d.value}</span></div>`;
+        if (d.sub) html += `<div class="text-[10px] text-dark-text pl-1 mb-1" style="opacity: 0.7;">${d.sub}</div>`;
         return html;
       }).join('');
 
-      // Educational tip
       const tipEl = document.getElementById('score-tip');
-      if (tip) {
-        tipEl.innerHTML = `<i class="fa-solid fa-lightbulb text-accent mr-1"></i> ${tip}`;
-        tipEl.style.display = '';
-      } else {
-        tipEl.style.display = 'none';
-      }
+      if (tip) { tipEl.innerHTML = `<i class="fa-solid fa-lightbulb text-accent mr-1"></i> ${tip}`; tipEl.style.display = ''; }
+      else tipEl.style.display = 'none';
 
       const btn = document.getElementById('btn-continue');
-      if (currentLesson < 4) {
+      if (currentLesson === 5) {
+        if (score >= PASS_THRESHOLD) {
+          btn.innerHTML = 'View Chapter Summary <i class="fa-solid fa-trophy ml-1"></i>';
+          btn.onclick = showChapterComplete;
+          btn.style.background = '#34D399';
+        } else {
+          btn.innerHTML = 'Retry Challenge <i class="fa-solid fa-rotate-left ml-1"></i>';
+          btn.onclick = () => { hideResults(); switchLesson(5); };
+          btn.style.background = '#F5620F';
+        }
+        btn.style.display = '';
+      } else if (currentLesson < TOTAL_LESSONS) {
         btn.innerHTML = 'Continue to Next Lesson <i class="fa-solid fa-arrow-right ml-1"></i>';
         btn.onclick = continueToNextLesson;
         btn.style.display = '';
         btn.style.background = '#F5620F';
-      } else {
-        btn.innerHTML = 'View Chapter Summary <i class="fa-solid fa-trophy ml-1"></i>';
-        btn.onclick = showChapterComplete;
-        btn.style.display = '';
-        btn.style.background = '#34D399';
       }
 
       document.getElementById('results-panel').classList.add('visible');
@@ -1356,44 +1285,33 @@
     }
 
     // ── Chapter Complete Screen ────────────────────────────────────
-    let chapterPreviewRenderer = null;
-    let chapterPreviewScene = null;
-    let chapterPreviewCamera = null;
-    let chapterPreviewAnim = null;
+    let chapterPreviewRenderer = null, chapterPreviewScene = null, chapterPreviewCamera = null, chapterPreviewAnim = null;
 
     function showChapterComplete() {
       hideResults();
-
-      const overall = Math.round(lessonScores.reduce((a, b) => a + b, 0) / 4);
+      const overall = Math.round(lessonScores.reduce((a, b) => a + b, 0) / TOTAL_LESSONS);
+      const totalXP = lessonScores[4] * 10;
       const scoreEl = document.getElementById('ch-overall-score');
       scoreEl.textContent = overall;
-      if (overall >= 90) scoreEl.style.color = '#34D399';
-      else if (overall >= 70) scoreEl.style.color = '#F5620F';
-      else scoreEl.style.color = '#EF4444';
+      scoreEl.style.color = overall >= 90 ? '#34D399' : overall >= 70 ? '#F5620F' : '#EF4444';
+      document.getElementById('ch-xp-display').textContent = `${totalXP} XP`;
 
-      // Lesson score breakdown
-      const lessonNames = ['Place First Wall', 'Place Second Wall', 'Complete Room', 'Door & Roof'];
+      const lessonNames = ['Place First Wall', 'Place Second Wall', 'Complete Room', 'Door & Roof', 'Final Challenge'];
       document.getElementById('ch-lesson-scores').innerHTML = lessonScores.map((s, i) => {
         const color = s >= 90 ? '#34D399' : s >= 70 ? '#F5620F' : '#EF4444';
-        return `<div class="flex items-center justify-between text-xs">
-          <span class="text-dark-text">${lessonNames[i]}</span>
-          <span class="font-medium" style="color: ${color};">${s}%</span>
-        </div>`;
+        const icon = i === 4 ? '<i class="fa-solid fa-star text-[8px] mr-1"></i>' : '';
+        return `<div class="flex items-center justify-between text-xs"><span class="text-dark-text">${icon}${lessonNames[i]}</span><span class="font-medium" style="color: ${color};">${s}%</span></div>`;
       }).join('');
 
-      // Element summary
       const walls = placedElements.filter(e => e.userData?.type === 'wall').length;
       const doors = placedElements.filter(e => e.userData?.type === 'door').length;
       const roofs = placedElements.filter(e => e.userData?.type === 'roof').length;
       document.getElementById('ch-elements-summary').innerHTML = `
         <div class="flex items-center gap-1.5"><i class="fa-solid fa-vector-square text-accent"></i><span class="text-dark-heading">${walls}</span> walls</div>
-        <div class="flex items-center gap-1.5"><i class="fa-solid fa-door-open text-accent"></i><span class="text-dark-heading">${doors}</span> door</div>
-        <div class="flex items-center gap-1.5"><i class="fa-solid fa-house-chimney text-accent"></i><span class="text-dark-heading">${roofs}</span> roof</div>
-      `;
+        <div class="flex items-center gap-1.5"><i class="fa-solid fa-door-open text-accent"></i><span class="text-dark-heading">${doors}</span> door${doors !== 1 ? 's' : ''}</div>
+        <div class="flex items-center gap-1.5"><i class="fa-solid fa-house-chimney text-accent"></i><span class="text-dark-heading">${roofs}</span> roof${roofs !== 1 ? 's' : ''}</div>`;
 
-      // Build mini 3D preview
       setupChapterPreview();
-
       document.getElementById('chapter-complete').classList.add('visible');
     }
 
@@ -1404,55 +1322,27 @@
     }
 
     function setupChapterPreview() {
-      const previewCanvas = document.getElementById('chapter-preview-canvas');
-      if (!chapterPreviewRenderer) {
-        chapterPreviewRenderer = new THREE.WebGLRenderer({ canvas: previewCanvas, antialias: true });
-        chapterPreviewRenderer.setClearColor(0x0B0D11);
-        chapterPreviewRenderer.shadowMap.enabled = true;
-      }
-      chapterPreviewRenderer.setSize(previewCanvas.width, previewCanvas.height);
-
+      const pc = document.getElementById('chapter-preview-canvas');
+      if (!chapterPreviewRenderer) { chapterPreviewRenderer = new THREE.WebGLRenderer({ canvas: pc, antialias: true }); chapterPreviewRenderer.setClearColor(0x0B0D11); chapterPreviewRenderer.shadowMap.enabled = true; }
+      chapterPreviewRenderer.setSize(pc.width, pc.height);
       chapterPreviewScene = new THREE.Scene();
       chapterPreviewScene.add(new THREE.AmbientLight(0xffffff, 0.5));
-      const dl = new THREE.DirectionalLight(0xffffff, 0.7);
-      dl.position.set(5, 8, 4);
-      dl.castShadow = true;
-      chapterPreviewScene.add(dl);
+      const dl = new THREE.DirectionalLight(0xffffff, 0.7); dl.position.set(5, 8, 4); dl.castShadow = true; chapterPreviewScene.add(dl);
       chapterPreviewScene.add(new THREE.HemisphereLight(0xB1C4E0, 0x283040, 0.4));
-
-      // Small ground
-      const gGeo = new THREE.PlaneGeometry(8, 8);
-      const gMat = new THREE.MeshStandardMaterial({ color: 0x0E1018, roughness: 0.95 });
-      const gnd = new THREE.Mesh(gGeo, gMat);
-      gnd.rotation.x = -Math.PI / 2;
-      gnd.receiveShadow = true;
-      chapterPreviewScene.add(gnd);
-
-      const miniGrid = new THREE.GridHelper(8, 26, 0x222636, 0x181C28);
-      chapterPreviewScene.add(miniGrid);
-
-      // Clone placed elements into preview scene
-      for (const el of placedElements) {
-        const clone = el.clone();
-        chapterPreviewScene.add(clone);
-      }
-
-      chapterPreviewCamera = new THREE.PerspectiveCamera(45, previewCanvas.width / previewCanvas.height, 0.1, 50);
-
-      let previewAngle = 0;
-      function animatePreview() {
-        chapterPreviewAnim = requestAnimationFrame(animatePreview);
-        previewAngle += 0.005;
-        const r = 7;
-        chapterPreviewCamera.position.set(
-          1.5 + r * Math.cos(previewAngle),
-          4,
-          1.5 + r * Math.sin(previewAngle)
-        );
+      const gnd = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.MeshStandardMaterial({ color: 0x0E1018, roughness: 0.95 }));
+      gnd.rotation.x = -Math.PI / 2; gnd.receiveShadow = true; chapterPreviewScene.add(gnd);
+      chapterPreviewScene.add(new THREE.GridHelper(8, 26, 0x222636, 0x181C28));
+      for (const el of placedElements) chapterPreviewScene.add(el.clone());
+      chapterPreviewCamera = new THREE.PerspectiveCamera(45, pc.width / pc.height, 0.1, 50);
+      let angle = 0;
+      function anim() {
+        chapterPreviewAnim = requestAnimationFrame(anim);
+        angle += 0.005;
+        chapterPreviewCamera.position.set(1.5 + 7 * Math.cos(angle), 4, 1.5 + 7 * Math.sin(angle));
         chapterPreviewCamera.lookAt(1.5, 1, 1.5);
         chapterPreviewRenderer.render(chapterPreviewScene, chapterPreviewCamera);
       }
-      animatePreview();
+      anim();
     }
 
     // ── Lesson Navigation ─────────────────────────────────────────
@@ -1460,14 +1350,16 @@
       1: 'Place a wall along the X-axis from <strong class="text-dark-heading">(0, 0)</strong> to <strong class="text-dark-heading">(3000, 0)</strong>. Two clicks: start point, then end point.',
       2: 'Place a wall along the Z-axis from <strong class="text-dark-heading">(0, 0)</strong> to <strong class="text-dark-heading">(0, 3000)</strong>. Match the target exactly for a high score.',
       3: 'Place <strong class="text-dark-heading">2 walls</strong> to close the room. You need:<br>• <strong class="text-dark-heading">(3000, 0) → (3000, 3000)</strong><br>• <strong class="text-dark-heading">(0, 3000) → (3000, 3000)</strong><br>Place them in any order.',
-      4: '<strong class="text-dark-heading">Phase 1:</strong> Click to place a door on a wall.<br><strong class="text-dark-heading">Phase 2:</strong> Click 4 corners to sketch the roof boundary matching the room footprint.'
+      4: '<strong class="text-dark-heading">Phase 1:</strong> Click to place a door on a wall.<br><strong class="text-dark-heading">Phase 2:</strong> Click 4 corners to sketch the roof boundary matching the room footprint.',
+      5: '<strong class="text-accent"><i class="fa-solid fa-star"></i> Final Challenge</strong><br>Build the complete room from scratch with <strong class="text-dark-heading">no guides</strong>.<br>Place 4 walls → door → roof.<br>Score 80%+ to complete Chapter 1.'
     };
 
     const LESSON_INSTRUCTIONS = {
       1: 'Click to place the start point of your wall',
       2: 'Click to place the start point of your wall',
       3: 'Click to start placing the first closing wall (any order)',
-      4: 'Click on or near a wall to place a door'
+      4: 'Click on or near a wall to place a door',
+      5: 'Place wall 1 of 4 — click to set the start point'
     };
 
     function switchLesson(num) {
@@ -1480,37 +1372,42 @@
       document.getElementById('prop-length').style.display = 'none';
       document.getElementById('prop-l3-count').style.display = 'none';
       document.getElementById('prop-l4-phase').style.display = 'none';
+      document.getElementById('prop-l5-progress').style.display = 'none';
+      document.getElementById('reference-section').style.display = 'none';
       hideMeasureBar();
 
       if (num === 3) {
-        l3WallsPlaced = 0;
-        l3Walls = [];
+        l3WallsPlaced = 0; l3Walls = [];
         document.getElementById('prop-l3-count').style.display = '';
         document.getElementById('l3-wall-count').textContent = `0 / ${L3_REQUIRED_WALLS}`;
       }
-
       if (num === 4) {
-        doorPlacedInL4 = false;
-        l4Phase = 'door';
-        roofSketchPoints = [];
-        roofSketchLines.forEach(obj => scene.remove(obj));
-        roofSketchLines = [];
-        clearRoofGuides();
+        doorPlacedInL4 = false; l4Phase = 'door';
+        roofSketchPoints = []; roofSketchLines.forEach(obj => scene.remove(obj)); roofSketchLines = []; clearRoofGuides();
         document.getElementById('prop-l4-phase').style.display = '';
         document.getElementById('l4-phase-label').textContent = 'Place Door';
+      }
+      if (num === 5) {
+        // Clear the entire scene for a fresh start
+        l5Elements.forEach(el => { scene.remove(el); const idx = placedElements.indexOf(el); if (idx >= 0) placedElements.splice(idx, 1); });
+        // Also clear any elements from previous lessons still in scene
+        [...placedElements].forEach(el => { scene.remove(el); });
+        placedElements = [];
+
+        l5Phase = 'walls'; l5WallsPlaced = 0; l5Walls = []; l5Elements = [];
+        roofSketchPoints = []; roofSketchLines.forEach(obj => scene.remove(obj)); roofSketchLines = []; clearRoofGuides();
+        document.getElementById('prop-l5-progress').style.display = '';
+        document.getElementById('l5-progress-label').textContent = `Walls: 0/${L5_REQUIRED_WALLS}`;
+        document.getElementById('reference-section').style.display = '';
+        updateElementsList();
       }
 
       document.querySelectorAll('.lesson-tab').forEach(tab => {
         const lessonNum = parseInt(tab.dataset.lesson);
         tab.classList.remove('active', 'completed');
         tab.classList.add('text-dark-text');
-        if (lessonNum === num) {
-          tab.classList.add('active');
-          tab.classList.remove('text-dark-text');
-        } else if (lessonsCompleted[lessonNum - 1]) {
-          tab.classList.add('completed');
-          tab.classList.remove('text-dark-text');
-        }
+        if (lessonNum === num) { tab.classList.add('active'); tab.classList.remove('text-dark-text'); }
+        else if (lessonsCompleted[lessonNum - 1]) { tab.classList.add('completed'); tab.classList.remove('text-dark-text'); }
       });
 
       document.getElementById('lesson-objective').innerHTML = LESSON_OBJECTIVES[num];
@@ -1519,36 +1416,25 @@
     }
 
     function continueToNextLesson() {
-      if (currentLesson < 4) {
-        switchLesson(currentLesson + 1);
-      }
+      if (currentLesson < TOTAL_LESSONS) switchLesson(currentLesson + 1);
     }
 
     // ── Progress ──────────────────────────────────────────────────
     function updateProgress() {
       const completed = lessonsCompleted.filter(Boolean).length;
-      document.getElementById('progress-label').textContent = `${completed} / 4 Lessons`;
-      document.getElementById('progress-bar').style.width = `${(completed / 4) * 100}%`;
+      document.getElementById('progress-label').textContent = `${completed} / ${TOTAL_LESSONS} Lessons`;
+      document.getElementById('progress-bar').style.width = `${(completed / TOTAL_LESSONS) * 100}%`;
     }
 
     // ── Elements List ─────────────────────────────────────────────
     function updateElementsList() {
       const el = document.getElementById('elements-list');
-      if (placedElements.length === 0) {
-        el.innerHTML = '<p class="text-xs text-dark-text italic">No elements placed yet</p>';
-        return;
-      }
-      el.innerHTML = placedElements.map((obj, i) => {
+      if (placedElements.length === 0) { el.innerHTML = '<p class="text-xs text-dark-text italic">No elements placed yet</p>'; return; }
+      el.innerHTML = placedElements.map(obj => {
         const type = obj.userData?.type || 'element';
         const icons = { wall: 'fa-vector-square', door: 'fa-door-open', roof: 'fa-house-chimney' };
-        const icon = icons[type] || 'fa-cube';
-        let detail = '';
-        if (type === 'wall') detail = `${obj.userData.lengthMM} mm`;
-        return `<div class="flex items-center gap-2 py-1 px-2 rounded text-xs hover:bg-white/[0.03]">
-          <i class="fa-solid ${icon} text-accent w-4 text-center"></i>
-          <span class="text-dark-heading capitalize">${type}</span>
-          <span class="text-dark-text ml-auto">${detail}</span>
-        </div>`;
+        let detail = type === 'wall' ? `${obj.userData.lengthMM} mm` : '';
+        return `<div class="flex items-center gap-2 py-1 px-2 rounded text-xs hover:bg-white/[0.03]"><i class="fa-solid ${icons[type] || 'fa-cube'} text-accent w-4 text-center"></i><span class="text-dark-heading capitalize">${type}</span><span class="text-dark-text ml-auto">${detail}</span></div>`;
       }).join('');
     }
 
@@ -1560,77 +1446,47 @@
       hideMeasureBar();
 
       if (currentLesson === 3) {
-        l3Walls.forEach(w => {
-          scene.remove(w);
-          const idx = placedElements.indexOf(w);
-          if (idx >= 0) placedElements.splice(idx, 1);
-        });
-        l3Walls = [];
-        l3WallsPlaced = 0;
+        l3Walls.forEach(w => { scene.remove(w); const idx = placedElements.indexOf(w); if (idx >= 0) placedElements.splice(idx, 1); });
+        l3Walls = []; l3WallsPlaced = 0;
         document.getElementById('l3-wall-count').textContent = `0 / ${L3_REQUIRED_WALLS}`;
         updateElementsList();
       }
-
       if (currentLesson === 4) {
-        const toRemove = placedElements.filter(el =>
-          (el.userData?.type === 'door' && doorPlacedInL4) ||
-          el.userData?.type === 'roof'
-        );
-        toRemove.forEach(el => {
-          scene.remove(el);
-          const idx = placedElements.indexOf(el);
-          if (idx >= 0) placedElements.splice(idx, 1);
-        });
-        doorPlacedInL4 = false;
-        l4Phase = 'door';
-        roofSketchPoints = [];
-        roofSketchLines.forEach(obj => scene.remove(obj));
-        roofSketchLines = [];
-        clearRoofGuides();
+        const toRemove = placedElements.filter(el => (el.userData?.type === 'door' && doorPlacedInL4) || el.userData?.type === 'roof');
+        toRemove.forEach(el => { scene.remove(el); const idx = placedElements.indexOf(el); if (idx >= 0) placedElements.splice(idx, 1); });
+        doorPlacedInL4 = false; l4Phase = 'door';
+        roofSketchPoints = []; roofSketchLines.forEach(obj => scene.remove(obj)); roofSketchLines = []; clearRoofGuides();
         document.getElementById('l4-phase-label').textContent = 'Place Door';
         updateElementsList();
       }
-
+      if (currentLesson === 5) {
+        l5Elements.forEach(el => { scene.remove(el); const idx = placedElements.indexOf(el); if (idx >= 0) placedElements.splice(idx, 1); });
+        l5Phase = 'walls'; l5WallsPlaced = 0; l5Walls = []; l5Elements = [];
+        roofSketchPoints = []; roofSketchLines.forEach(obj => scene.remove(obj)); roofSketchLines = []; clearRoofGuides();
+        document.getElementById('l5-progress-label').textContent = `Walls: 0/${L5_REQUIRED_WALLS}`;
+        updateElementsList();
+      }
       updateInstruction(LESSON_INSTRUCTIONS[currentLesson]);
       setStatus('Ready');
     }
 
     // ── View Controls ─────────────────────────────────────────────
     function setView(view) {
-      document.querySelectorAll('.view-btn[data-view]').forEach(b => {
-        b.classList.remove('active');
-        b.style.color = '#A0A4B8';
-      });
-      const activeBtn = document.querySelector(`.view-btn[data-view="${view}"]`);
-      if (activeBtn) { activeBtn.classList.add('active'); activeBtn.style.color = ''; }
-
+      document.querySelectorAll('.view-btn[data-view]').forEach(b => { b.classList.remove('active'); b.style.color = '#A0A4B8'; });
+      const btn = document.querySelector(`.view-btn[data-view="${view}"]`);
+      if (btn) { btn.classList.add('active'); btn.style.color = ''; }
       switch (view) {
-        case '3d':
-          spherical = { theta: Math.PI / 4, phi: Math.PI / 4, radius: 10 };
-          break;
-        case 'top':
-          spherical = { theta: 0, phi: 0.01, radius: 12 };
-          break;
-        case 'front':
-          spherical = { theta: 0, phi: Math.PI / 2, radius: 10 };
-          break;
+        case '3d': spherical = { theta: Math.PI/4, phi: Math.PI/4, radius: 10 }; break;
+        case 'top': spherical = { theta: 0, phi: 0.01, radius: 12 }; break;
+        case 'front': spherical = { theta: 0, phi: Math.PI/2, radius: 10 }; break;
       }
       updateCameraFromSpherical();
     }
 
-    function resetView() {
-      ORBIT_TARGET.set(0, 0, 0);
-      setView('3d');
-    }
+    function resetView() { ORBIT_TARGET.set(0, 0, 0); setView('3d'); }
 
-    // ── UI Helpers ────────────────────────────────────────────────
-    function updateInstruction(text) {
-      document.getElementById('instruction-text').textContent = text;
-    }
-
-    function setStatus(text) {
-      document.getElementById('status-mode').textContent = text;
-    }
+    function updateInstruction(text) { document.getElementById('instruction-text').textContent = text; }
+    function setStatus(text) { document.getElementById('status-mode').textContent = text; }
 
     // ── Landing Page ──────────────────────────────────────────────
     document.getElementById('btn-start').addEventListener('click', () => {
@@ -1642,11 +1498,7 @@
     });
 
     // ── Render Loop ───────────────────────────────────────────────
-    function animate() {
-      requestAnimationFrame(animate);
-      renderer.render(scene, camera);
-    }
-
+    function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
     sphericalFromCamera();
     animate();
   </script>
