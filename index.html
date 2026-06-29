@@ -4,23 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BIM Academy — Interactive Revit Training</title>
-
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            accent: '#F5620F',
-            'accent-hover': '#E0550A',
-            dark: {
-              bg: '#0B0D11',
-              card: '#13161D',
-              border: '#222636',
-              text: '#A0A4B8',
-              heading: '#E8E9ED'
-            }
+            accent: '#F5620F', 'accent-hover': '#E0550A',
+            dark: { bg: '#0B0D11', card: '#13161D', border: '#222636', text: '#A0A4B8', heading: '#E8E9ED' }
           },
           fontFamily: {
             display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
@@ -30,82 +21,44 @@
       }
     };
   </script>
-
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
-
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-
-  <!-- Three.js r128 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow: hidden; background: #0B0D11; color: #A0A4B8; }
     body { font-family: 'Inter', system-ui, sans-serif; }
-
     #three-canvas { width: 100%; height: 100%; display: block; }
-
     .lesson-tab { transition: all 0.2s ease; }
     .lesson-tab.active { color: #F5620F; border-color: #F5620F; background: rgba(245, 98, 15, 0.08); }
     .lesson-tab.completed { color: #34D399; border-color: #34D399; background: rgba(52, 211, 153, 0.08); }
-    .lesson-tab:hover:not(.active) { background: rgba(255, 255, 255, 0.04); }
-
+    .lesson-tab.locked { opacity: 0.35; pointer-events: none; }
+    .lesson-tab:hover:not(.active):not(.locked) { background: rgba(255, 255, 255, 0.04); }
     .view-btn { transition: all 0.15s ease; }
     .view-btn.active { color: #F5620F; background: rgba(245, 98, 15, 0.12); border-color: #F5620F; }
     .view-btn:hover:not(.active) { background: rgba(255, 255, 255, 0.06); }
-
     .progress-fill { transition: width 0.4s ease; }
-
     .sidebar-section { border-bottom: 1px solid #222636; }
     .sidebar-section:last-child { border-bottom: none; }
-
     .property-row:hover { background: rgba(255, 255, 255, 0.03); }
-
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #13161D; }
     ::-webkit-scrollbar-thumb { background: #222636; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #333850; }
-
-    #results-panel {
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      transform: translateY(100%);
-      opacity: 0;
-    }
-    #results-panel.visible {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
+    #results-panel { transition: transform 0.3s ease, opacity 0.3s ease; transform: translateY(100%); opacity: 0; }
+    #results-panel.visible { transform: translateY(0); opacity: 1; }
     #measure-bar { transition: opacity 0.2s ease; }
-
-    #chapter-complete {
-      transition: opacity 0.5s ease;
-      opacity: 0;
-      pointer-events: none;
-    }
-    #chapter-complete.visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    #chapter-complete .score-ring {
-      animation: score-pulse 2s ease-in-out infinite alternate;
-    }
-    @keyframes score-pulse {
-      from { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.2); }
-      to { box-shadow: 0 0 0 12px rgba(52, 211, 153, 0); }
-    }
+    #chapter-complete { transition: opacity 0.5s ease; opacity: 0; pointer-events: none; }
+    #chapter-complete.visible { opacity: 1; pointer-events: auto; }
+    .score-ring { animation: score-pulse 2s ease-in-out infinite alternate; }
+    @keyframes score-pulse { from { box-shadow: 0 0 0 0 rgba(52,211,153,0.2); } to { box-shadow: 0 0 0 12px rgba(52,211,153,0); } }
     #chapter-preview-canvas { border-radius: 12px; }
   </style>
 </head>
 <body class="font-body">
 
-  <!-- ============================================================
-       LANDING PAGE
-       ============================================================ -->
+  <!-- LANDING PAGE -->
   <div id="landing-page" class="fixed inset-0 z-50 flex items-center justify-center" style="background: #0B0D11;">
     <div class="text-center max-w-lg px-6">
       <div class="mb-6">
@@ -116,52 +69,50 @@
         <p class="text-dark-text text-lg">Interactive Revit Training Platform</p>
       </div>
 
-      <div class="rounded-xl p-6 mb-6" style="background: #13161D; border: 1px solid #222636;">
-        <div class="flex items-center gap-3 mb-3">
+      <!-- Chapter 1 Card -->
+      <div class="rounded-xl p-5 mb-3 cursor-pointer transition-all hover:scale-[1.01]" id="ch1-card" style="background: #13161D; border: 1px solid #222636;" onclick="startChapter(1)">
+        <div class="flex items-center gap-3">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(245, 98, 15, 0.12);">
             <span class="text-accent font-display font-bold text-sm">1</span>
           </div>
-          <div class="text-left">
+          <div class="text-left flex-1">
             <h3 class="font-display font-semibold text-dark-heading text-sm">Chapter 1 — First Room</h3>
-            <p class="text-xs text-dark-text">5 Lessons · Build your first enclosed space</p>
+            <p class="text-xs text-dark-text">5 Lessons · Walls, door & roof</p>
           </div>
-        </div>
-        <div class="grid grid-cols-2 gap-2 text-xs text-dark-text">
-          <div class="flex items-center gap-2"><i class="fa-solid fa-vector-square w-4 text-center text-accent"></i> Place walls</div>
-          <div class="flex items-center gap-2"><i class="fa-solid fa-ruler w-4 text-center text-accent"></i> Grid snapping</div>
-          <div class="flex items-center gap-2"><i class="fa-solid fa-door-open w-4 text-center text-accent"></i> Add door</div>
-          <div class="flex items-center gap-2"><i class="fa-solid fa-star w-4 text-center text-accent"></i> Final challenge</div>
+          <span class="text-xs font-medium" id="ch1-status" style="color: #F5620F;">Start <i class="fa-solid fa-arrow-right"></i></span>
         </div>
       </div>
 
-      <button id="btn-start" class="w-full py-3.5 rounded-xl font-display font-semibold text-white text-sm tracking-wide transition-all hover:scale-[1.02] active:scale-[0.98]"
-        style="background: #F5620F;">
-        Start Chapter 1
-        <i class="fa-solid fa-arrow-right ml-2"></i>
-      </button>
+      <!-- Chapter 2 Card -->
+      <div class="rounded-xl p-5 mb-6 transition-all" id="ch2-card" style="background: #13161D; border: 1px solid #222636; opacity: 0.4;">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(245, 98, 15, 0.12);">
+            <span class="text-accent font-display font-bold text-sm">2</span>
+          </div>
+          <div class="text-left flex-1">
+            <h3 class="font-display font-semibold text-dark-heading text-sm">Chapter 2 — Windows & Openings</h3>
+            <p class="text-xs text-dark-text">2 Lessons · Place windows on walls</p>
+          </div>
+          <span class="text-xs text-dark-text" id="ch2-status"><i class="fa-solid fa-lock mr-1"></i> Complete Ch.1</span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ============================================================
-       CHAPTER COMPLETE OVERLAY
-       ============================================================ -->
+  <!-- CHAPTER COMPLETE OVERLAY -->
   <div id="chapter-complete" class="fixed inset-0 z-40 flex items-center justify-center" style="background: rgba(11, 13, 17, 0.92);">
     <div class="max-w-2xl w-full mx-6">
       <div class="text-center mb-6">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-3 score-ring" style="background: rgba(52, 211, 153, 0.12); border: 2px solid #34D399;">
           <i class="fa-solid fa-trophy text-2xl" style="color: #34D399;"></i>
         </div>
-        <h2 class="font-display text-3xl font-bold text-dark-heading mb-1">Chapter 1 Complete!</h2>
-        <p class="text-dark-text">You built your first room in Revit</p>
+        <h2 class="font-display text-3xl font-bold text-dark-heading mb-1" id="ch-complete-title">Chapter Complete!</h2>
+        <p class="text-dark-text" id="ch-complete-subtitle">Well done</p>
       </div>
-
       <div class="flex gap-4">
-        <!-- 3D Preview -->
         <div class="flex-1 rounded-xl overflow-hidden" style="background: #13161D; border: 1px solid #222636;">
           <canvas id="chapter-preview-canvas" width="400" height="300"></canvas>
         </div>
-
-        <!-- Stats -->
         <div class="w-64 space-y-3">
           <div class="rounded-xl p-4" style="background: #13161D; border: 1px solid #222636;">
             <div class="flex items-center justify-between mb-2">
@@ -173,19 +124,15 @@
               <span class="text-xs text-dark-text">/ 100</span>
             </div>
           </div>
-
           <div class="rounded-xl p-4" style="background: #13161D; border: 1px solid #222636;">
             <p class="text-xs text-dark-text uppercase tracking-wider mb-2 font-medium">Lesson Scores</p>
             <div class="space-y-1.5" id="ch-lesson-scores"></div>
           </div>
-
           <div class="rounded-xl p-4" style="background: #13161D; border: 1px solid #222636;">
             <p class="text-xs text-dark-text uppercase tracking-wider mb-2 font-medium">Elements Placed</p>
-            <div class="flex gap-3 text-xs" id="ch-elements-summary"></div>
+            <div class="flex gap-3 text-xs flex-wrap" id="ch-elements-summary"></div>
           </div>
-
-          <button onclick="hideChapterComplete()" class="w-full py-2.5 rounded-xl font-display font-semibold text-white text-sm"
-            style="background: #34D399;">
+          <button id="ch-complete-btn" onclick="hideChapterComplete()" class="w-full py-2.5 rounded-xl font-display font-semibold text-white text-sm" style="background: #34D399;">
             Return to Room <i class="fa-solid fa-arrow-right ml-1"></i>
           </button>
         </div>
@@ -193,20 +140,16 @@
     </div>
   </div>
 
-  <!-- ============================================================
-       APP SHELL
-       ============================================================ -->
+  <!-- APP SHELL -->
   <div id="app-shell" class="hidden h-screen flex flex-col">
-
-    <!-- TOP BAR -->
     <header class="flex-none flex items-center justify-between px-4 h-12" style="background: #13161D; border-bottom: 1px solid #222636;">
       <div class="flex items-center gap-3">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="goToLanding()">
           <i class="fa-solid fa-building text-accent text-sm"></i>
           <span class="font-display font-semibold text-dark-heading text-sm">BIM Academy</span>
         </div>
         <div class="w-px h-5" style="background: #222636;"></div>
-        <span class="text-xs text-dark-text font-medium">Chapter 1 — First Room</span>
+        <span class="text-xs text-dark-text font-medium" id="chapter-title">Chapter 1 — First Room</span>
       </div>
       <div class="flex items-center gap-3">
         <span class="text-xs text-dark-text" id="progress-label">0 / 5 Lessons</span>
@@ -216,55 +159,19 @@
       </div>
     </header>
 
-    <!-- LESSON TABS -->
-    <div class="flex-none flex items-center gap-1 px-4 h-10" style="background: #10131A; border-bottom: 1px solid #222636;">
-      <button class="lesson-tab active flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border border-transparent" data-lesson="1" onclick="switchLesson(1)">
-        <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border border-current">1</span>
-        Place First Wall
-      </button>
-      <button class="lesson-tab flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border border-transparent text-dark-text" data-lesson="2" onclick="switchLesson(2)">
-        <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border border-current">2</span>
-        Place Second Wall
-      </button>
-      <button class="lesson-tab flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border border-transparent text-dark-text" data-lesson="3" onclick="switchLesson(3)">
-        <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border border-current">3</span>
-        Complete Room
-      </button>
-      <button class="lesson-tab flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border border-transparent text-dark-text" data-lesson="4" onclick="switchLesson(4)">
-        <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border border-current">4</span>
-        Door & Roof
-      </button>
-      <button class="lesson-tab flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border border-transparent text-dark-text" data-lesson="5" onclick="switchLesson(5)">
-        <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border border-current"><i class="fa-solid fa-star text-[8px]"></i></span>
-        Final Challenge
-      </button>
-    </div>
+    <!-- LESSON TABS (dynamic) -->
+    <div class="flex-none flex items-center gap-1 px-4 h-10" id="tab-bar" style="background: #10131A; border-bottom: 1px solid #222636;"></div>
 
-    <!-- MAIN CONTENT (viewport + sidebar) -->
     <div class="flex-1 flex min-h-0">
-
-      <!-- 3D VIEWPORT -->
       <div class="flex-1 relative min-w-0">
         <canvas id="three-canvas"></canvas>
-
-        <!-- View Controls -->
         <div class="absolute top-3 left-3 flex items-center gap-1">
-          <button class="view-btn active px-2.5 py-1.5 rounded-md text-xs font-medium border" style="border-color: #222636;" data-view="3d" onclick="setView('3d')">
-            <i class="fa-solid fa-cube mr-1"></i> 3D
-          </button>
-          <button class="view-btn px-2.5 py-1.5 rounded-md text-xs font-medium border" style="border-color: #222636; color: #A0A4B8;" data-view="top" onclick="setView('top')">
-            <i class="fa-solid fa-arrows-up-down mr-1"></i> Top
-          </button>
-          <button class="view-btn px-2.5 py-1.5 rounded-md text-xs font-medium border" style="border-color: #222636; color: #A0A4B8;" data-view="front" onclick="setView('front')">
-            <i class="fa-solid fa-square mr-1"></i> Front
-          </button>
+          <button class="view-btn active px-2.5 py-1.5 rounded-md text-xs font-medium border" style="border-color: #222636;" data-view="3d" onclick="setView('3d')"><i class="fa-solid fa-cube mr-1"></i> 3D</button>
+          <button class="view-btn px-2.5 py-1.5 rounded-md text-xs font-medium border" style="border-color: #222636; color: #A0A4B8;" data-view="top" onclick="setView('top')"><i class="fa-solid fa-arrows-up-down mr-1"></i> Top</button>
+          <button class="view-btn px-2.5 py-1.5 rounded-md text-xs font-medium border" style="border-color: #222636; color: #A0A4B8;" data-view="front" onclick="setView('front')"><i class="fa-solid fa-square mr-1"></i> Front</button>
           <div class="w-px h-5 mx-1" style="background: #222636;"></div>
-          <button class="view-btn px-2.5 py-1.5 rounded-md text-xs font-medium border" style="border-color: #222636; color: #A0A4B8;" onclick="resetView()">
-            <i class="fa-solid fa-rotate-left mr-1"></i> Reset
-          </button>
+          <button class="view-btn px-2.5 py-1.5 rounded-md text-xs font-medium border" style="border-color: #222636; color: #A0A4B8;" onclick="resetView()"><i class="fa-solid fa-rotate-left mr-1"></i> Reset</button>
         </div>
-
-        <!-- Live Measurement Bar -->
         <div id="measure-bar" class="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-4 px-4 py-1.5 rounded-lg text-xs font-medium" style="background: rgba(19, 22, 29, 0.95); border: 1px solid #F5620F; opacity: 0;">
           <span class="text-dark-text">Length: <strong class="text-dark-heading" id="m-length">—</strong></span>
           <span class="w-px h-3" style="background: #222636;"></span>
@@ -272,14 +179,10 @@
           <span class="w-px h-3" style="background: #222636;"></span>
           <span class="text-dark-text">From <strong class="text-accent" id="m-start">—</strong> to <strong class="text-accent" id="m-end">—</strong></span>
         </div>
-
-        <!-- Instruction Overlay -->
         <div id="instruction-overlay" class="absolute bottom-16 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-xs font-medium" style="background: rgba(19, 22, 29, 0.92); border: 1px solid #222636; color: #E8E9ED;">
           <i class="fa-solid fa-mouse-pointer text-accent mr-2"></i>
           <span id="instruction-text">Click to place the start point of your wall</span>
         </div>
-
-        <!-- Results Panel -->
         <div id="results-panel" class="absolute bottom-14 right-4 w-80 rounded-xl overflow-hidden" style="background: #13161D; border: 1px solid #222636; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
           <div class="px-4 py-3" style="border-bottom: 1px solid #222636;">
             <div class="flex items-center justify-between">
@@ -299,18 +202,14 @@
             </div>
             <div class="space-y-1.5 mb-2" id="score-details"></div>
             <div class="mb-3 px-2 py-1.5 rounded text-[11px] leading-relaxed" id="score-tip" style="background: rgba(245, 98, 15, 0.06); border: 1px solid rgba(245, 98, 15, 0.15); color: #A0A4B8; display: none;"></div>
-            <button id="btn-continue" onclick="continueToNextLesson()" class="w-full py-2 rounded-lg font-display font-semibold text-white text-xs tracking-wide"
-              style="background: #F5620F;">
+            <button id="btn-continue" onclick="continueToNextLesson()" class="w-full py-2 rounded-lg font-display font-semibold text-white text-xs tracking-wide" style="background: #F5620F;">
               Continue to Next Lesson <i class="fa-solid fa-arrow-right ml-1"></i>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- RIGHT SIDEBAR -->
       <aside class="flex-none w-72 flex flex-col overflow-y-auto" style="background: #13161D; border-left: 1px solid #222636;">
-
-        <!-- Lesson Info -->
         <div class="sidebar-section p-4">
           <div class="flex items-center gap-2 mb-2">
             <i class="fa-solid fa-book-open text-accent text-xs"></i>
@@ -318,118 +217,50 @@
           </div>
           <p class="text-sm text-dark-text leading-relaxed" id="lesson-objective"></p>
         </div>
-
-        <!-- Reference Image (L5 only) -->
         <div class="sidebar-section p-4" id="reference-section" style="display: none;">
           <div class="flex items-center gap-2 mb-2">
             <i class="fa-solid fa-image text-accent text-xs"></i>
             <h3 class="font-display font-semibold text-dark-heading text-xs uppercase tracking-wider">Reference</h3>
           </div>
           <div class="rounded-lg overflow-hidden" style="background: #0B0D11; border: 1px solid #222636;">
-            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%;">
-              <rect x="0" y="0" width="200" height="200" fill="#0B0D11"/>
-              <!-- Grid -->
-              <line x1="30" y1="30" x2="30" y2="170" stroke="#181C28" stroke-width="0.5"/>
-              <line x1="100" y1="30" x2="100" y2="170" stroke="#181C28" stroke-width="0.5"/>
-              <line x1="170" y1="30" x2="170" y2="170" stroke="#181C28" stroke-width="0.5"/>
-              <line x1="30" y1="30" x2="170" y2="30" stroke="#181C28" stroke-width="0.5"/>
-              <line x1="30" y1="100" x2="170" y2="100" stroke="#181C28" stroke-width="0.5"/>
-              <line x1="30" y1="170" x2="170" y2="170" stroke="#181C28" stroke-width="0.5"/>
-              <!-- Walls -->
-              <rect x="28" y="168" width="144" height="4" rx="1" fill="#CCCCCC"/>
-              <rect x="28" y="28" width="4" height="144" rx="1" fill="#CCCCCC"/>
-              <rect x="168" y="28" width="4" height="144" rx="1" fill="#CCCCCC"/>
-              <rect x="28" y="28" width="144" height="4" rx="1" fill="#CCCCCC"/>
-              <!-- Door -->
-              <rect x="85" y="168" width="30" height="4" rx="1" fill="#A0896C"/>
-              <!-- Roof fill -->
-              <rect x="32" y="32" width="136" height="136" rx="2" fill="#5A6577" opacity="0.15"/>
-              <!-- Dimensions -->
-              <text x="100" y="190" text-anchor="middle" fill="#A0A4B8" font-size="9" font-family="Inter, sans-serif">3000 mm</text>
-              <text x="15" y="105" text-anchor="middle" fill="#A0A4B8" font-size="9" font-family="Inter, sans-serif" transform="rotate(-90, 15, 105)">3000 mm</text>
-              <!-- Labels -->
-              <text x="100" y="15" text-anchor="middle" fill="#F5620F" font-size="8" font-family="Inter, sans-serif" font-weight="600">TOP VIEW — Target Room</text>
-              <!-- Corner coords -->
-              <text x="30" y="180" text-anchor="start" fill="#666" font-size="6" font-family="monospace">(0,0)</text>
-              <text x="170" y="180" text-anchor="end" fill="#666" font-size="6" font-family="monospace">(3000,0)</text>
-              <text x="170" y="27" text-anchor="end" fill="#666" font-size="6" font-family="monospace">(3000,3000)</text>
-              <text x="30" y="27" text-anchor="start" fill="#666" font-size="6" font-family="monospace">(0,3000)</text>
-            </svg>
+            <svg id="reference-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%;"></svg>
           </div>
         </div>
-
-        <!-- Properties -->
         <div class="sidebar-section p-4">
           <div class="flex items-center gap-2 mb-3">
             <i class="fa-solid fa-sliders text-accent text-xs"></i>
             <h3 class="font-display font-semibold text-dark-heading text-xs uppercase tracking-wider">Properties</h3>
           </div>
           <div class="space-y-0" id="properties-list">
-            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs">
-              <span class="text-dark-text">Grid Snap</span>
-              <span class="text-dark-heading font-medium">300 mm</span>
-            </div>
-            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs">
-              <span class="text-dark-text">Wall Height</span>
-              <span class="text-dark-heading font-medium">2700 mm</span>
-            </div>
-            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs">
-              <span class="text-dark-text">Wall Thickness</span>
-              <span class="text-dark-heading font-medium">200 mm</span>
-            </div>
-            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs" id="prop-cursor">
-              <span class="text-dark-text">Cursor Position</span>
-              <span class="text-dark-heading font-medium" id="cursor-pos">—</span>
-            </div>
-            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs" id="prop-length" style="display: none;">
-              <span class="text-dark-text">Wall Length</span>
-              <span class="text-dark-heading font-medium" id="wall-length">—</span>
-            </div>
-            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs" id="prop-l3-count" style="display: none;">
-              <span class="text-dark-text">Walls Placed</span>
-              <span class="text-dark-heading font-medium" id="l3-wall-count">0 / 2</span>
-            </div>
-            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs" id="prop-l4-phase" style="display: none;">
-              <span class="text-dark-text">Phase</span>
-              <span class="text-dark-heading font-medium" id="l4-phase-label">Place Door</span>
-            </div>
-            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs" id="prop-l5-progress" style="display: none;">
-              <span class="text-dark-text">Challenge</span>
-              <span class="text-dark-heading font-medium" id="l5-progress-label">Walls: 0/4</span>
-            </div>
+            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs"><span class="text-dark-text">Grid Snap</span><span class="text-dark-heading font-medium">300 mm</span></div>
+            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs"><span class="text-dark-text">Wall Height</span><span class="text-dark-heading font-medium">2700 mm</span></div>
+            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs"><span class="text-dark-text">Wall Thickness</span><span class="text-dark-heading font-medium">200 mm</span></div>
+            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs" id="prop-cursor"><span class="text-dark-text">Cursor Position</span><span class="text-dark-heading font-medium" id="cursor-pos">—</span></div>
+            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs" id="prop-length" style="display: none;"><span class="text-dark-text">Wall Length</span><span class="text-dark-heading font-medium" id="wall-length">—</span></div>
+            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs" id="prop-l3-count" style="display: none;"><span class="text-dark-text">Walls Placed</span><span class="text-dark-heading font-medium" id="l3-wall-count">0 / 2</span></div>
+            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs" id="prop-l4-phase" style="display: none;"><span class="text-dark-text">Phase</span><span class="text-dark-heading font-medium" id="l4-phase-label">Place Door</span></div>
+            <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs" id="prop-l5-progress" style="display: none;"><span class="text-dark-text">Challenge</span><span class="text-dark-heading font-medium" id="l5-progress-label">Walls: 0/4</span></div>
           </div>
         </div>
-
-        <!-- Placed Elements -->
         <div class="sidebar-section p-4">
           <div class="flex items-center gap-2 mb-3">
             <i class="fa-solid fa-layer-group text-accent text-xs"></i>
             <h3 class="font-display font-semibold text-dark-heading text-xs uppercase tracking-wider">Placed Elements</h3>
           </div>
-          <div class="space-y-1" id="elements-list">
-            <p class="text-xs text-dark-text italic">No elements placed yet</p>
-          </div>
+          <div class="space-y-1" id="elements-list"><p class="text-xs text-dark-text italic">No elements placed yet</p></div>
         </div>
-
-        <!-- Actions -->
         <div class="sidebar-section p-4 mt-auto">
-          <button id="btn-clear" onclick="clearCurrentPlacement()" class="w-full py-2 rounded-lg text-xs font-medium border transition-all hover:bg-white/5"
-            style="border-color: #222636; color: #A0A4B8;">
+          <button id="btn-clear" onclick="clearCurrentPlacement()" class="w-full py-2 rounded-lg text-xs font-medium border transition-all hover:bg-white/5" style="border-color: #222636; color: #A0A4B8;">
             <i class="fa-solid fa-eraser mr-1.5"></i> Clear Current Placement
           </button>
         </div>
       </aside>
     </div>
 
-    <!-- BOTTOM STATUS BAR -->
     <footer class="flex-none flex items-center justify-between px-4 h-8 text-[11px]" style="background: #10131A; border-top: 1px solid #222636;">
       <div class="flex items-center gap-4">
-        <span class="flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full" style="background: #34D399;"></span>
-          Grid Snap: <strong class="text-dark-heading">300 mm</strong>
-        </span>
+        <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" style="background: #34D399;"></span>Grid Snap: <strong class="text-dark-heading">300 mm</strong></span>
         <span>Units: <strong class="text-dark-heading">Millimetres</strong></span>
-        <span>Scale: <strong class="text-dark-heading">1 unit = 300 mm</strong></span>
       </div>
       <div class="flex items-center gap-4">
         <span id="status-mode" class="text-accent font-medium">Ready</span>
@@ -438,11 +269,8 @@
     </footer>
   </div>
 
-  <!-- ============================================================
-       JAVASCRIPT
-       ============================================================ -->
   <script>
-    const TOTAL_LESSONS = 5;
+    // ── Constants ──────────────────────────────────────────────────
     const GRID_SNAP = 0.3;
     const WALL_HEIGHT = 2.7;
     const WALL_THICKNESS = 0.2;
@@ -455,11 +283,62 @@
     const PASS_THRESHOLD = 80;
     const L3_REQUIRED_WALLS = 2;
     const L5_REQUIRED_WALLS = 4;
+    const WINDOW_WIDTH = 1.2;
+    const WINDOW_HEIGHT = 1.2;
+    const SILL_HEIGHT = 0.9;
+
+    // ── Chapter Definitions ───────────────────────────────────────
+    const CHAPTERS = {
+      1: {
+        title: 'Chapter 1 — First Room',
+        totalLessons: 5,
+        tabs: [
+          { label: 'Place First Wall' },
+          { label: 'Place Second Wall' },
+          { label: 'Complete Room' },
+          { label: 'Door & Roof' },
+          { label: 'Final Challenge', icon: 'fa-star' }
+        ],
+        objectives: {
+          1: 'Place a wall along the X-axis from <strong class="text-dark-heading">(0, 0)</strong> to <strong class="text-dark-heading">(3000, 0)</strong>. Two clicks: start point, then end point.',
+          2: 'Place a wall along the Z-axis from <strong class="text-dark-heading">(0, 0)</strong> to <strong class="text-dark-heading">(0, 3000)</strong>. Match the target exactly.',
+          3: 'Place <strong class="text-dark-heading">2 walls</strong> to close the room. You need:<br>• <strong class="text-dark-heading">(3000, 0) → (3000, 3000)</strong><br>• <strong class="text-dark-heading">(0, 3000) → (3000, 3000)</strong><br>Place them in any order.',
+          4: '<strong class="text-dark-heading">Phase 1:</strong> Click to place a door on a wall.<br><strong class="text-dark-heading">Phase 2:</strong> Click 4 corners to sketch the roof boundary.',
+          5: '<strong class="text-accent"><i class="fa-solid fa-star"></i> Final Challenge</strong><br>Build the complete room from scratch with <strong class="text-dark-heading">no guides</strong>.<br>Place 4 walls → door → roof. Score 80%+ to pass.'
+        },
+        instructions: {
+          1: 'Click to place the start point of your wall',
+          2: 'Click to place the start point of your wall',
+          3: 'Click to start placing the first closing wall (any order)',
+          4: 'Click on or near a wall to place a door',
+          5: 'Place wall 1 of 4 — click to set the start point'
+        }
+      },
+      2: {
+        title: 'Chapter 2 — Windows & Openings',
+        totalLessons: 2,
+        tabs: [
+          { label: 'Place First Window' },
+          { label: 'Place Window at Offset' }
+        ],
+        objectives: {
+          1: 'Place a window on the <strong class="text-dark-heading">south wall</strong>. Click on the wall to host the window. It will snap to the wall face at <strong class="text-dark-heading">900 mm sill height</strong>.',
+          2: 'Place a window on the <strong class="text-dark-heading">east wall</strong> at position <strong class="text-dark-heading">600 mm from the south-east corner</strong>. Use the measurement feedback to hit the target offset.'
+        },
+        instructions: {
+          1: 'Click on the south wall to place a window',
+          2: 'Click on the east wall — aim for 600mm from the corner'
+        }
+      }
+    };
 
     // ── State ─────────────────────────────────────────────────────
+    let currentChapter = 1;
     let currentLesson = 1;
-    let lessonsCompleted = new Array(TOTAL_LESSONS).fill(false);
-    let lessonScores = new Array(TOTAL_LESSONS).fill(0);
+    let chapterState = {
+      1: { completed: new Array(5).fill(false), scores: new Array(5).fill(0) },
+      2: { completed: new Array(2).fill(false), scores: new Array(2).fill(0) }
+    };
     let placedElements = [];
 
     let wallStartPoint = null;
@@ -470,17 +349,19 @@
     let l3WallsPlaced = 0;
     let l3Walls = [];
     let l4Phase = 'door';
-
-    // Lesson 5 (Final Challenge) state
-    let l5Phase = 'walls'; // 'walls' | 'door' | 'roof'
+    let l5Phase = 'walls';
     let l5WallsPlaced = 0;
     let l5Walls = [];
-    let l5Elements = []; // all elements placed during L5
+    let l5Elements = [];
 
     let isOrbiting = false;
     let isPanning = false;
     let prevMouse = { x: 0, y: 0 };
     let spherical = { theta: Math.PI / 4, phi: Math.PI / 4, radius: 10 };
+
+    // Convenience accessors for current chapter state
+    function cState() { return chapterState[currentChapter]; }
+    function totalLessons() { return CHAPTERS[currentChapter].totalLessons; }
 
     // ── Three.js Setup ────────────────────────────────────────────
     const canvas = document.getElementById('three-canvas');
@@ -495,762 +376,530 @@
     camera.position.copy(DEFAULT_CAM_POS);
     camera.lookAt(ORBIT_TARGET);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-    scene.add(ambientLight);
-    const hemiLight = new THREE.HemisphereLight(0xB1C4E0, 0x283040, 0.5);
-    scene.add(hemiLight);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+    scene.add(new THREE.HemisphereLight(0xB1C4E0, 0x283040, 0.5));
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
     dirLight.position.set(8, 12, 6);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.set(2048, 2048);
-    dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 50;
-    dirLight.shadow.camera.left = -15;
-    dirLight.shadow.camera.right = 15;
-    dirLight.shadow.camera.top = 15;
-    dirLight.shadow.camera.bottom = -15;
+    dirLight.shadow.camera.near = 0.5; dirLight.shadow.camera.far = 50;
+    dirLight.shadow.camera.left = -15; dirLight.shadow.camera.right = 15;
+    dirLight.shadow.camera.top = 15; dirLight.shadow.camera.bottom = -15;
     scene.add(dirLight);
 
-    const gridHelper = new THREE.GridHelper(GRID_SIZE, GRID_DIVISIONS, 0x222636, 0x181C28);
-    scene.add(gridHelper);
+    scene.add(new THREE.GridHelper(GRID_SIZE, GRID_DIVISIONS, 0x222636, 0x181C28));
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(GRID_SIZE, GRID_SIZE),
+      new THREE.MeshStandardMaterial({ color: 0x0E1018, roughness: 0.95 })
+    );
+    ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
 
-    const groundGeo = new THREE.PlaneGeometry(GRID_SIZE, GRID_SIZE);
-    const groundMat = new THREE.MeshStandardMaterial({ color: 0x0E1018, roughness: 0.95 });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
-    scene.add(ground);
+    const originMarker = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), new THREE.MeshBasicMaterial({ color: 0xF5620F }));
+    originMarker.position.set(0, 0.01, 0); scene.add(originMarker);
 
-    const originGeo = new THREE.SphereGeometry(0.06, 16, 16);
-    const originMat = new THREE.MeshBasicMaterial({ color: 0xF5620F });
-    const originMarker = new THREE.Mesh(originGeo, originMat);
-    originMarker.position.set(0, 0.01, 0);
-    scene.add(originMarker);
-
-    const cursorGeo = new THREE.RingGeometry(0.08, 0.12, 16);
     const cursorMat = new THREE.MeshBasicMaterial({ color: 0xF5620F, side: THREE.DoubleSide });
-    const cursorIndicator = new THREE.Mesh(cursorGeo, cursorMat);
-    cursorIndicator.rotation.x = -Math.PI / 2;
-    cursorIndicator.position.y = 0.02;
-    cursorIndicator.visible = false;
+    const cursorIndicator = new THREE.Mesh(new THREE.RingGeometry(0.08, 0.12, 16), cursorMat);
+    cursorIndicator.rotation.x = -Math.PI / 2; cursorIndicator.position.y = 0.02; cursorIndicator.visible = false;
     scene.add(cursorIndicator);
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    // ── Sizing ────────────────────────────────────────────────────
     function resize() {
-      const container = canvas.parentElement;
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      renderer.setSize(w, h);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+      const c = canvas.parentElement; renderer.setSize(c.clientWidth, c.clientHeight);
+      camera.aspect = c.clientWidth / c.clientHeight; camera.updateProjectionMatrix();
     }
     window.addEventListener('resize', resize);
 
     // ── Camera Controls ───────────────────────────────────────────
     function updateCameraFromSpherical() {
       const { theta, phi, radius } = spherical;
-      camera.position.set(
-        ORBIT_TARGET.x + radius * Math.sin(phi) * Math.cos(theta),
-        ORBIT_TARGET.y + radius * Math.cos(phi),
-        ORBIT_TARGET.z + radius * Math.sin(phi) * Math.sin(theta)
-      );
+      camera.position.set(ORBIT_TARGET.x + radius * Math.sin(phi) * Math.cos(theta), ORBIT_TARGET.y + radius * Math.cos(phi), ORBIT_TARGET.z + radius * Math.sin(phi) * Math.sin(theta));
       camera.lookAt(ORBIT_TARGET);
     }
-
     function sphericalFromCamera() {
-      const offset = camera.position.clone().sub(ORBIT_TARGET);
-      spherical.radius = offset.length();
-      spherical.phi = Math.acos(Math.max(-1, Math.min(1, offset.y / spherical.radius)));
-      spherical.theta = Math.atan2(offset.z, offset.x);
+      const o = camera.position.clone().sub(ORBIT_TARGET);
+      spherical.radius = o.length(); spherical.phi = Math.acos(Math.max(-1, Math.min(1, o.y / spherical.radius))); spherical.theta = Math.atan2(o.z, o.x);
     }
-
     canvas.addEventListener('mousedown', (e) => {
-      if (e.button === 0 && e.shiftKey) { isPanning = true; }
-      else if (e.button === 1 || (e.button === 0 && e.altKey)) { isOrbiting = true; }
-      else if (e.button === 2) { isOrbiting = true; }
+      if (e.button === 0 && e.shiftKey) isPanning = true;
+      else if (e.button === 1 || (e.button === 0 && e.altKey)) isOrbiting = true;
+      else if (e.button === 2) isOrbiting = true;
       prevMouse = { x: e.clientX, y: e.clientY };
     });
-
     canvas.addEventListener('mousemove', (e) => {
-      const dx = e.clientX - prevMouse.x;
-      const dy = e.clientY - prevMouse.y;
+      const dx = e.clientX - prevMouse.x, dy = e.clientY - prevMouse.y;
       prevMouse = { x: e.clientX, y: e.clientY };
-
-      if (isOrbiting) {
-        spherical.theta -= dx * 0.005;
-        spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi + dy * 0.005));
-        updateCameraFromSpherical();
-      } else if (isPanning) {
-        const right = new THREE.Vector3();
-        const up = new THREE.Vector3();
-        camera.getWorldDirection(up);
-        right.crossVectors(up, camera.up).normalize();
-        up.crossVectors(right, up).normalize();
-        const panSpeed = spherical.radius * 0.002;
-        ORBIT_TARGET.add(right.multiplyScalar(-dx * panSpeed));
-        ORBIT_TARGET.add(up.multiplyScalar(dy * panSpeed));
-        updateCameraFromSpherical();
-      }
+      if (isOrbiting) { spherical.theta -= dx * 0.005; spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi + dy * 0.005)); updateCameraFromSpherical(); }
+      else if (isPanning) { const r = new THREE.Vector3(), u = new THREE.Vector3(); camera.getWorldDirection(u); r.crossVectors(u, camera.up).normalize(); u.crossVectors(r, u).normalize(); const ps = spherical.radius * 0.002; ORBIT_TARGET.add(r.multiplyScalar(-dx * ps)); ORBIT_TARGET.add(u.multiplyScalar(dy * ps)); updateCameraFromSpherical(); }
       updateCursorPosition(e);
     });
-
     canvas.addEventListener('mouseup', () => { isOrbiting = false; isPanning = false; });
     canvas.addEventListener('mouseleave', () => { isOrbiting = false; isPanning = false; cursorIndicator.visible = false; });
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    canvas.addEventListener('wheel', (e) => { e.preventDefault(); spherical.radius = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, spherical.radius * (1 + e.deltaY * 0.003))); updateCameraFromSpherical(); }, { passive: false });
 
-    canvas.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const zoomDelta = e.deltaY * 0.003;
-      spherical.radius = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, spherical.radius * (1 + zoomDelta)));
-      updateCameraFromSpherical();
-    }, { passive: false });
-
-    // ── Grid Snapping ─────────────────────────────────────────────
-    function snapToGrid(value) {
-      return Math.round(value / GRID_SNAP) * GRID_SNAP;
-    }
-
+    // ── Grid & Snapping ───────────────────────────────────────────
+    function snapToGrid(v) { return Math.round(v / GRID_SNAP) * GRID_SNAP; }
     function getGroundPoint(e) {
-      const rect = canvas.getBoundingClientRect();
-      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      const r = canvas.getBoundingClientRect();
+      mouse.x = ((e.clientX - r.left) / r.width) * 2 - 1; mouse.y = -((e.clientY - r.top) / r.height) * 2 + 1;
       raycaster.setFromCamera(mouse, camera);
-      const hits = raycaster.intersectObject(ground);
-      if (hits.length > 0) {
-        const p = hits[0].point;
-        return new THREE.Vector3(snapToGrid(p.x), 0, snapToGrid(p.z));
-      }
-      return null;
+      const h = raycaster.intersectObject(ground);
+      return h.length > 0 ? new THREE.Vector3(snapToGrid(h[0].point.x), 0, snapToGrid(h[0].point.z)) : null;
     }
-
     function updateCursorPosition(e) {
       const p = getGroundPoint(e);
-      if (p) {
-        const isNear = nearEndpoint(p);
-        cursorIndicator.position.set(p.x, 0.02, p.z);
-        cursorIndicator.visible = true;
-        cursorMat.color.setHex(isNear ? 0x34D399 : 0xF5620F);
-        const xmm = Math.round(p.x * 1000);
-        const zmm = Math.round(p.z * 1000);
-        document.getElementById('cursor-pos').textContent = `(${xmm}, ${zmm})${isNear ? ' ⊕' : ''}`;
-      } else {
-        cursorIndicator.visible = false;
-      }
+      if (p) { const n = nearEndpoint(p); cursorIndicator.position.set(p.x, 0.02, p.z); cursorIndicator.visible = true; cursorMat.color.setHex(n ? 0x34D399 : 0xF5620F); document.getElementById('cursor-pos').textContent = `(${Math.round(p.x*1000)}, ${Math.round(p.z*1000)})${n ? ' ⊕' : ''}`; }
+      else cursorIndicator.visible = false;
     }
-
-    // ── Endpoint Snapping ─────────────────────────────────────────
     const SNAP_THRESHOLD = 0.25;
     function snapToEndpoint(point) {
       const walls = placedElements.filter(el => el.userData?.type === 'wall');
-      let bestDist = SNAP_THRESHOLD;
-      let snapped = null;
-      for (const wall of walls) {
-        for (const ep of [wall.userData.start, wall.userData.end]) {
-          const d = Math.sqrt((point.x - ep.x) ** 2 + (point.z - ep.z) ** 2);
-          if (d < bestDist) { bestDist = d; snapped = ep.clone(); }
-        }
-      }
-      return snapped || point;
+      let bd = SNAP_THRESHOLD, sn = null;
+      for (const w of walls) for (const ep of [w.userData.start, w.userData.end]) { const d = Math.sqrt((point.x-ep.x)**2+(point.z-ep.z)**2); if (d < bd) { bd = d; sn = ep.clone(); } }
+      return sn || point;
     }
-
     function nearEndpoint(point) {
-      const walls = placedElements.filter(el => el.userData?.type === 'wall');
-      for (const wall of walls) {
-        for (const ep of [wall.userData.start, wall.userData.end]) {
-          if (Math.sqrt((point.x - ep.x) ** 2 + (point.z - ep.z) ** 2) < 0.4) return true;
-        }
-      }
+      for (const w of placedElements.filter(el => el.userData?.type === 'wall'))
+        for (const ep of [w.userData.start, w.userData.end]) if (Math.sqrt((point.x-ep.x)**2+(point.z-ep.z)**2) < 0.4) return true;
       return false;
     }
 
     // ── Wall Creation ─────────────────────────────────────────────
     const WALL_JOIN_EXTEND = WALL_THICKNESS * 0.6;
     function createWallMesh(start, end) {
-      const dx = end.x - start.x;
-      const dz = end.z - start.z;
-      const length = Math.sqrt(dx * dx + dz * dz);
+      const dx = end.x-start.x, dz = end.z-start.z, length = Math.sqrt(dx*dx+dz*dz);
       if (length < 0.01) return null;
       const angle = Math.atan2(dz, dx);
-      const joinedLength = length + WALL_JOIN_EXTEND;
-      const geo = new THREE.BoxGeometry(joinedLength, WALL_HEIGHT, WALL_THICKNESS);
-      const mat = new THREE.MeshStandardMaterial({ color: 0xCCCCCC, roughness: 0.7, metalness: 0.1 });
-      const wall = new THREE.Mesh(geo, mat);
-      wall.position.set((start.x + end.x) / 2, WALL_HEIGHT / 2, (start.z + end.z) / 2);
-      wall.rotation.y = -angle;
-      wall.castShadow = true;
-      wall.receiveShadow = true;
-      wall.userData = { type: 'wall', start: start.clone(), end: end.clone(), lengthMM: Math.round(length * 1000) };
+      const geo = new THREE.BoxGeometry(length + WALL_JOIN_EXTEND, WALL_HEIGHT, WALL_THICKNESS);
+      const wall = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xCCCCCC, roughness: 0.7, metalness: 0.1 }));
+      wall.position.set((start.x+end.x)/2, WALL_HEIGHT/2, (start.z+end.z)/2);
+      wall.rotation.y = -angle; wall.castShadow = true; wall.receiveShadow = true;
+      wall.userData = { type: 'wall', start: start.clone(), end: end.clone(), lengthMM: Math.round(length*1000) };
       return wall;
     }
-
     function createWallPreview(start, current) {
-      if (wallPreviewMesh) { scene.remove(wallPreviewMesh); }
-      const dx = current.x - start.x;
-      const dz = current.z - start.z;
-      const length = Math.sqrt(dx * dx + dz * dz);
+      if (wallPreviewMesh) scene.remove(wallPreviewMesh);
+      const dx = current.x-start.x, dz = current.z-start.z, length = Math.sqrt(dx*dx+dz*dz);
       if (length < 0.01) return;
-      const angle = Math.atan2(dz, dx);
-      const joinedLength = length + WALL_JOIN_EXTEND;
-      const geo = new THREE.BoxGeometry(joinedLength, WALL_HEIGHT, WALL_THICKNESS);
-      const mat = new THREE.MeshStandardMaterial({ color: 0xF5620F, transparent: true, opacity: 0.35, roughness: 0.7 });
-      wallPreviewMesh = new THREE.Mesh(geo, mat);
-      wallPreviewMesh.position.set((start.x + current.x) / 2, WALL_HEIGHT / 2, (start.z + current.z) / 2);
-      wallPreviewMesh.rotation.y = -angle;
-      scene.add(wallPreviewMesh);
-      const lenMM = Math.round(length * 1000);
-      const angleDeg = Math.round(Math.atan2(-dz, dx) * 180 / Math.PI);
-      const startMM = `(${Math.round(start.x * 1000)}, ${Math.round(start.z * 1000)})`;
-      const endMM = `(${Math.round(current.x * 1000)}, ${Math.round(current.z * 1000)})`;
+      const geo = new THREE.BoxGeometry(length + WALL_JOIN_EXTEND, WALL_HEIGHT, WALL_THICKNESS);
+      wallPreviewMesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xF5620F, transparent: true, opacity: 0.35, roughness: 0.7 }));
+      wallPreviewMesh.position.set((start.x+current.x)/2, WALL_HEIGHT/2, (start.z+current.z)/2);
+      wallPreviewMesh.rotation.y = -Math.atan2(dz, dx); scene.add(wallPreviewMesh);
+      const lenMM = Math.round(length*1000);
       document.getElementById('wall-length').textContent = `${lenMM} mm`;
       document.getElementById('prop-length').style.display = '';
       document.getElementById('m-length').textContent = `${lenMM} mm`;
-      document.getElementById('m-angle').textContent = `${angleDeg}°`;
-      document.getElementById('m-start').textContent = startMM;
-      document.getElementById('m-end').textContent = endMM;
+      document.getElementById('m-angle').textContent = `${Math.round(Math.atan2(-dz, dx)*180/Math.PI)}°`;
+      document.getElementById('m-start').textContent = `(${Math.round(start.x*1000)}, ${Math.round(start.z*1000)})`;
+      document.getElementById('m-end').textContent = `(${Math.round(current.x*1000)}, ${Math.round(current.z*1000)})`;
       document.getElementById('measure-bar').style.opacity = '1';
     }
-
-    function hideMeasureBar() {
-      document.getElementById('measure-bar').style.opacity = '0';
-    }
+    function hideMeasureBar() { document.getElementById('measure-bar').style.opacity = '0'; }
 
     // ── Door Creation ─────────────────────────────────────────────
     function findNearestWall(clickPoint) {
       const walls = placedElements.filter(el => el.userData?.type === 'wall');
-      let bestWall = null, bestDist = Infinity, bestProj = null;
+      let bw = null, bd = Infinity, bp = null, bt = 0;
       for (const wall of walls) {
         const a = wall.userData.start, b = wall.userData.end;
-        const dx = b.x - a.x, dz = b.z - a.z;
-        const lenSq = dx * dx + dz * dz;
-        if (lenSq < 0.001) continue;
-        let t = ((clickPoint.x - a.x) * dx + (clickPoint.z - a.z) * dz) / lenSq;
-        t = Math.max(0.15, Math.min(0.85, t));
-        const projX = a.x + t * dx, projZ = a.z + t * dz;
-        const dist = Math.sqrt((clickPoint.x - projX) ** 2 + (clickPoint.z - projZ) ** 2);
-        if (dist < bestDist) { bestDist = dist; bestWall = wall; bestProj = new THREE.Vector3(projX, 0, projZ); }
+        const dx = b.x-a.x, dz = b.z-a.z, ls = dx*dx+dz*dz;
+        if (ls < 0.001) continue;
+        let t = Math.max(0.15, Math.min(0.85, ((clickPoint.x-a.x)*dx+(clickPoint.z-a.z)*dz)/ls));
+        const px = a.x+t*dx, pz = a.z+t*dz, dist = Math.sqrt((clickPoint.x-px)**2+(clickPoint.z-pz)**2);
+        if (dist < bd) { bd = dist; bw = wall; bp = new THREE.Vector3(px, 0, pz); bt = t; }
       }
-      return { wall: bestWall, point: bestProj, distance: bestDist };
+      return { wall: bw, point: bp, distance: bd, t: bt };
+    }
+    function createDoorMesh(position, wallAngle) {
+      const dw = 0.9, dh = 2.1, group = new THREE.Group();
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(dw+0.1, dh+0.05, WALL_THICKNESS+0.05), new THREE.MeshStandardMaterial({ color: 0x8B7355, roughness: 0.6 }));
+      frame.position.y = dh/2; frame.castShadow = true; group.add(frame);
+      const panel = new THREE.Mesh(new THREE.BoxGeometry(dw-0.05, dh-0.1, 0.05), new THREE.MeshStandardMaterial({ color: 0xA0896C, roughness: 0.5 }));
+      panel.position.y = dh/2; panel.position.z = WALL_THICKNESS/2+0.03; panel.castShadow = true; group.add(panel);
+      group.position.copy(position); group.rotation.y = -wallAngle;
+      group.userData = { type: 'door', position: position.clone(), wallAngle };
+      return group;
     }
 
-    function createDoorMesh(position, wallAngle) {
-      const doorWidth = 0.9, doorHeight = 2.1;
+    // ── Window Creation ───────────────────────────────────────────
+    function createWindowMesh(position, wallAngle) {
       const group = new THREE.Group();
-      const frameGeo = new THREE.BoxGeometry(doorWidth + 0.1, doorHeight + 0.05, WALL_THICKNESS + 0.05);
-      const frameMat = new THREE.MeshStandardMaterial({ color: 0x8B7355, roughness: 0.6 });
-      const frame = new THREE.Mesh(frameGeo, frameMat);
-      frame.position.y = doorHeight / 2;
+      // Frame
+      const frame = new THREE.Mesh(
+        new THREE.BoxGeometry(WINDOW_WIDTH + 0.06, WINDOW_HEIGHT + 0.06, WALL_THICKNESS + 0.04),
+        new THREE.MeshStandardMaterial({ color: 0x607080, roughness: 0.4, metalness: 0.3 })
+      );
+      frame.position.y = SILL_HEIGHT + WINDOW_HEIGHT / 2;
       frame.castShadow = true;
       group.add(frame);
-      const panelGeo = new THREE.BoxGeometry(doorWidth - 0.05, doorHeight - 0.1, 0.05);
-      const panelMat = new THREE.MeshStandardMaterial({ color: 0xA0896C, roughness: 0.5 });
-      const panel = new THREE.Mesh(panelGeo, panelMat);
-      panel.position.y = doorHeight / 2;
-      panel.position.z = WALL_THICKNESS / 2 + 0.03;
-      panel.castShadow = true;
-      group.add(panel);
+      // Glass pane
+      const glass = new THREE.Mesh(
+        new THREE.BoxGeometry(WINDOW_WIDTH - 0.06, WINDOW_HEIGHT - 0.06, 0.02),
+        new THREE.MeshStandardMaterial({ color: 0x88BBDD, transparent: true, opacity: 0.4, roughness: 0.1, metalness: 0.6 })
+      );
+      glass.position.y = SILL_HEIGHT + WINDOW_HEIGHT / 2;
+      group.add(glass);
+      // Sill
+      const sill = new THREE.Mesh(
+        new THREE.BoxGeometry(WINDOW_WIDTH + 0.12, 0.04, WALL_THICKNESS + 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x556070, roughness: 0.5 })
+      );
+      sill.position.y = SILL_HEIGHT - 0.02;
+      group.add(sill);
+
       group.position.copy(position);
       group.rotation.y = -wallAngle;
-      group.userData = { type: 'door', position: position.clone(), wallAngle };
+      group.userData = { type: 'window', position: position.clone(), wallAngle };
       return group;
     }
 
     // ── Roof Creation ─────────────────────────────────────────────
     function createRoofMesh(points) {
       if (points.length < 3) return null;
-      const cx = points.reduce((s, p) => s + p.x, 0) / points.length;
-      const cz = points.reduce((s, p) => s + p.z, 0) / points.length;
-      const expand = WALL_THICKNESS * 0.3;
-      const shape = new THREE.Shape();
-      const expanded = points.map(p => {
-        const dirX = p.x - cx, dirZ = p.z - cz;
-        const len = Math.sqrt(dirX * dirX + dirZ * dirZ) || 1;
-        return { x: p.x + (dirX / len) * expand, z: p.z + (dirZ / len) * expand };
-      });
-      shape.moveTo(expanded[0].x, -expanded[0].z);
-      for (let i = 1; i < expanded.length; i++) shape.lineTo(expanded[i].x, -expanded[i].z);
-      shape.closePath();
-      const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.15, bevelEnabled: false });
-      const mat = new THREE.MeshStandardMaterial({ color: 0x5A6577, roughness: 0.8, metalness: 0.2 });
-      const roof = new THREE.Mesh(geo, mat);
-      roof.rotation.x = -Math.PI / 2;
-      roof.position.y = WALL_HEIGHT;
-      roof.castShadow = true;
-      roof.receiveShadow = true;
+      const cx = points.reduce((s,p) => s+p.x, 0)/points.length, cz = points.reduce((s,p) => s+p.z, 0)/points.length;
+      const exp = WALL_THICKNESS * 0.3, shape = new THREE.Shape();
+      const ex = points.map(p => { const dx=p.x-cx, dz=p.z-cz, l=Math.sqrt(dx*dx+dz*dz)||1; return { x: p.x+(dx/l)*exp, z: p.z+(dz/l)*exp }; });
+      shape.moveTo(ex[0].x, -ex[0].z); for (let i=1;i<ex.length;i++) shape.lineTo(ex[i].x, -ex[i].z); shape.closePath();
+      const roof = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: 0.15, bevelEnabled: false }), new THREE.MeshStandardMaterial({ color: 0x5A6577, roughness: 0.8, metalness: 0.2 }));
+      roof.rotation.x = -Math.PI/2; roof.position.y = WALL_HEIGHT; roof.castShadow = true; roof.receiveShadow = true;
       roof.userData = { type: 'roof', points: points.map(p => p.clone()) };
       return roof;
     }
 
     // ── Sketch visuals ────────────────────────────────────────────
     const SKETCH_Y = WALL_HEIGHT + 0.05;
-    function addSketchLine(from, to) {
-      const geo = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(from.x, SKETCH_Y, from.z), new THREE.Vector3(to.x, SKETCH_Y, to.z)
-      ]);
-      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xF5620F, linewidth: 2 }));
-      scene.add(line);
-      roofSketchLines.push(line);
-    }
-    function addSketchPoint(pos) {
-      const dot = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), new THREE.MeshBasicMaterial({ color: 0xF5620F }));
-      dot.position.set(pos.x, SKETCH_Y, pos.z);
-      scene.add(dot);
-      roofSketchLines.push(dot);
-    }
+    function addSketchLine(f, t) { const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(f.x,SKETCH_Y,f.z), new THREE.Vector3(t.x,SKETCH_Y,t.z)]); const l = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0xF5620F })); scene.add(l); roofSketchLines.push(l); }
+    function addSketchPoint(p) { const d = new THREE.Mesh(new THREE.SphereGeometry(0.08,12,12), new THREE.MeshBasicMaterial({ color: 0xF5620F })); d.position.set(p.x,SKETCH_Y,p.z); scene.add(d); roofSketchLines.push(d); }
     let roofGuideMarkers = [];
-    function showRoofGuides() {
-      clearRoofGuides();
-      [[0,0],[3,0],[3,3],[0,3]].forEach(c => {
-        const marker = new THREE.Mesh(
-          new THREE.RingGeometry(0.06, 0.1, 4),
-          new THREE.MeshBasicMaterial({ color: 0x34D399, side: THREE.DoubleSide, transparent: true, opacity: 0.5 })
-        );
-        marker.rotation.x = -Math.PI / 2;
-        marker.rotation.z = Math.PI / 4;
-        marker.position.set(c[0], SKETCH_Y + 0.02, c[1]);
-        scene.add(marker);
-        roofGuideMarkers.push(marker);
-      });
-    }
-    function clearRoofGuides() {
-      roofGuideMarkers.forEach(m => scene.remove(m));
-      roofGuideMarkers = [];
-    }
+    function showRoofGuides() { clearRoofGuides(); [[0,0],[3,0],[3,3],[0,3]].forEach(c => { const m = new THREE.Mesh(new THREE.RingGeometry(0.06,0.1,4), new THREE.MeshBasicMaterial({ color: 0x34D399, side: THREE.DoubleSide, transparent: true, opacity: 0.5 })); m.rotation.x=-Math.PI/2; m.rotation.z=Math.PI/4; m.position.set(c[0],SKETCH_Y+0.02,c[1]); scene.add(m); roofGuideMarkers.push(m); }); }
+    function clearRoofGuides() { roofGuideMarkers.forEach(m => scene.remove(m)); roofGuideMarkers = []; }
 
     // ── Interaction Handler ───────────────────────────────────────
     canvas.addEventListener('click', (e) => {
       if (isOrbiting || isPanning || e.shiftKey || e.altKey) return;
       const p = getGroundPoint(e);
       if (!p) return;
-      if (currentLesson >= 1 && currentLesson <= 3) handleWallPlacement(p);
-      else if (currentLesson === 4) handleLesson4(p);
-      else if (currentLesson === 5) handleLesson5(p);
+      if (currentChapter === 1) {
+        if (currentLesson >= 1 && currentLesson <= 3) handleWallPlacement(p);
+        else if (currentLesson === 4) handleLesson4(p);
+        else if (currentLesson === 5) handleLesson5(p);
+      } else if (currentChapter === 2) {
+        handleWindowPlacement(p);
+      }
     });
 
     function handleWallPlacement(p) {
-      const snappedP = snapToEndpoint(p);
-      if (!wallStartPoint) {
-        wallStartPoint = snappedP.clone();
-        updateInstruction('Click to place the end point of your wall');
-        setStatus('Placing wall...');
-      } else {
-        if (wallPreviewMesh) { scene.remove(wallPreviewMesh); wallPreviewMesh = null; }
-        hideMeasureBar();
-        const wall = createWallMesh(wallStartPoint, snappedP);
+      const sp = snapToEndpoint(p);
+      if (!wallStartPoint) { wallStartPoint = sp.clone(); updateInstruction('Click to place the end point of your wall'); setStatus('Placing wall...'); }
+      else {
+        if (wallPreviewMesh) { scene.remove(wallPreviewMesh); wallPreviewMesh = null; } hideMeasureBar();
+        const wall = createWallMesh(wallStartPoint, sp);
         if (wall) {
-          scene.add(wall);
-          placedElements.push(wall);
-          updateElementsList();
-          document.getElementById('prop-length').style.display = 'none';
-          wallStartPoint = null;
+          scene.add(wall); placedElements.push(wall); updateElementsList();
+          document.getElementById('prop-length').style.display = 'none'; wallStartPoint = null;
           if (currentLesson === 3) {
-            l3Walls.push(wall);
-            l3WallsPlaced++;
+            l3Walls.push(wall); l3WallsPlaced++;
             document.getElementById('l3-wall-count').textContent = `${l3WallsPlaced} / ${L3_REQUIRED_WALLS}`;
-            const bestMatch = findBestTargetMatch(wall, LESSON_TARGETS[3].walls);
-            const lenErr = Math.abs(wall.userData.lengthMM - bestMatch.targetLenMM);
-            if (lenErr > 200) { wall.material.color.setHex(0xEF6B6B); setStatus(`Wall length off by ${lenErr} mm`); }
-            else if (lenErr > 0) wall.material.color.setHex(0xE8C86A);
+            const bm = findBestTargetMatch(wall, LESSON_TARGETS[3].walls);
+            const le = Math.abs(wall.userData.lengthMM - bm.targetLenMM);
+            if (le > 200) { wall.material.color.setHex(0xEF6B6B); setStatus(`Wall length off by ${le} mm`); }
+            else if (le > 0) wall.material.color.setHex(0xE8C86A);
             if (l3WallsPlaced >= L3_REQUIRED_WALLS) scoreAndComplete();
-            else { updateInstruction(`Wall ${l3WallsPlaced} of ${L3_REQUIRED_WALLS} placed. Place the next wall to close the room`); setStatus(`${l3WallsPlaced}/${L3_REQUIRED_WALLS} walls placed`); }
-          } else {
-            scoreAndComplete();
-          }
+            else { updateInstruction(`Wall ${l3WallsPlaced} of ${L3_REQUIRED_WALLS} placed. Place the next wall`); setStatus(`${l3WallsPlaced}/${L3_REQUIRED_WALLS} walls`); }
+          } else scoreAndComplete();
         }
       }
     }
 
     function handleLesson4(p) {
       if (l4Phase === 'door') {
-        const nearest = findNearestWall(p);
-        if (!nearest.wall || nearest.distance > 0.8) { updateInstruction('Click closer to a wall to place the door'); setStatus('No wall nearby'); return; }
-        const ws = nearest.wall.userData.start, we = nearest.wall.userData.end;
-        const door = createDoorMesh(nearest.point, Math.atan2(we.z - ws.z, we.x - ws.x));
-        scene.add(door); placedElements.push(door);
-        doorPlacedInL4 = true; l4Phase = 'roof';
-        updateElementsList();
-        document.getElementById('l4-phase-label').textContent = 'Sketch Roof (0/4)';
-        updateInstruction('Click 4 corners to define the roof boundary — start at a room corner');
-        setStatus('Door placed on wall — now sketch the roof');
-        showRoofGuides();
-      } else if (l4Phase === 'roof') {
-        handleRoofClick(p);
-      }
+        const n = findNearestWall(p);
+        if (!n.wall || n.distance > 0.8) { updateInstruction('Click closer to a wall to place the door'); setStatus('No wall nearby'); return; }
+        const ws = n.wall.userData.start, we = n.wall.userData.end;
+        const door = createDoorMesh(n.point, Math.atan2(we.z-ws.z, we.x-ws.x));
+        scene.add(door); placedElements.push(door); doorPlacedInL4 = true; l4Phase = 'roof';
+        updateElementsList(); document.getElementById('l4-phase-label').textContent = 'Sketch Roof (0/4)';
+        updateInstruction('Click 4 corners to define the roof boundary'); setStatus('Door placed — sketch roof'); showRoofGuides();
+      } else if (l4Phase === 'roof') handleRoofClick(p);
     }
 
-    // ── Lesson 5: Final Challenge ─────────────────────────────────
     function handleLesson5(p) {
       if (l5Phase === 'walls') {
-        const snappedP = snapToEndpoint(p);
-        if (!wallStartPoint) {
-          wallStartPoint = snappedP.clone();
-          updateInstruction('Click to place the end point of your wall');
-          setStatus('Placing wall...');
-        } else {
-          if (wallPreviewMesh) { scene.remove(wallPreviewMesh); wallPreviewMesh = null; }
-          hideMeasureBar();
-          const wall = createWallMesh(wallStartPoint, snappedP);
+        const sp = snapToEndpoint(p);
+        if (!wallStartPoint) { wallStartPoint = sp.clone(); updateInstruction('Click to place the end point'); setStatus('Placing wall...'); }
+        else {
+          if (wallPreviewMesh) { scene.remove(wallPreviewMesh); wallPreviewMesh = null; } hideMeasureBar();
+          const wall = createWallMesh(wallStartPoint, sp);
           if (wall) {
-            scene.add(wall); placedElements.push(wall); l5Elements.push(wall);
-            l5Walls.push(wall); l5WallsPlaced++;
-            updateElementsList();
-            document.getElementById('prop-length').style.display = 'none';
+            scene.add(wall); placedElements.push(wall); l5Elements.push(wall); l5Walls.push(wall); l5WallsPlaced++;
+            updateElementsList(); document.getElementById('prop-length').style.display = 'none'; wallStartPoint = null;
             document.getElementById('l5-progress-label').textContent = `Walls: ${l5WallsPlaced}/${L5_REQUIRED_WALLS}`;
-            wallStartPoint = null;
-
-            if (l5WallsPlaced >= L5_REQUIRED_WALLS) {
-              l5Phase = 'door';
-              document.getElementById('l5-progress-label').textContent = 'Place door';
-              updateInstruction('All 4 walls placed. Now click on a wall to place the door');
-              setStatus('Walls done — place door');
-            } else {
-              updateInstruction(`Wall ${l5WallsPlaced}/${L5_REQUIRED_WALLS} placed. Place the next wall`);
-              setStatus(`${l5WallsPlaced}/${L5_REQUIRED_WALLS} walls`);
-            }
+            if (l5WallsPlaced >= L5_REQUIRED_WALLS) { l5Phase = 'door'; document.getElementById('l5-progress-label').textContent = 'Place door'; updateInstruction('Walls done. Click on a wall to place the door'); setStatus('Place door'); }
+            else { updateInstruction(`Wall ${l5WallsPlaced}/${L5_REQUIRED_WALLS}. Place the next wall`); setStatus(`${l5WallsPlaced}/${L5_REQUIRED_WALLS} walls`); }
           }
         }
       } else if (l5Phase === 'door') {
-        const nearest = findNearestWall(p);
-        if (!nearest.wall || nearest.distance > 0.8) { updateInstruction('Click closer to a wall to place the door'); setStatus('No wall nearby'); return; }
-        const ws = nearest.wall.userData.start, we = nearest.wall.userData.end;
-        const door = createDoorMesh(nearest.point, Math.atan2(we.z - ws.z, we.x - ws.x));
-        scene.add(door); placedElements.push(door); l5Elements.push(door);
-        updateElementsList();
-        l5Phase = 'roof';
-        document.getElementById('l5-progress-label').textContent = 'Sketch roof (0/4)';
-        updateInstruction('Door placed. Click 4 corners to sketch the roof boundary');
-        setStatus('Door done — sketch roof');
-      } else if (l5Phase === 'roof') {
-        handleRoofClick(p);
-      }
+        const n = findNearestWall(p);
+        if (!n.wall || n.distance > 0.8) { updateInstruction('Click closer to a wall'); return; }
+        const ws = n.wall.userData.start, we = n.wall.userData.end;
+        const door = createDoorMesh(n.point, Math.atan2(we.z-ws.z, we.x-ws.x));
+        scene.add(door); placedElements.push(door); l5Elements.push(door); updateElementsList();
+        l5Phase = 'roof'; document.getElementById('l5-progress-label').textContent = 'Sketch roof (0/4)';
+        updateInstruction('Door placed. Click 4 corners for the roof'); setStatus('Sketch roof');
+      } else if (l5Phase === 'roof') handleRoofClick(p);
     }
 
-    // Shared roof click handler for L4 and L5
-    function handleRoofClick(p) {
-      const snappedP = snapToEndpoint(p);
-      roofSketchPoints.push(snappedP.clone());
-      addSketchPoint(snappedP);
-      if (roofSketchPoints.length > 1) addSketchLine(roofSketchPoints[roofSketchPoints.length - 2], snappedP);
+    // ── Chapter 2: Window Placement ───────────────────────────────
+    const CH2_TARGETS = {
+      1: { wallIdx: 0, wall: { a: [0,0], b: [3,0] }, targetPos: [1.5, 0], targetWallName: 'south wall' },
+      2: { wallIdx: 2, wall: { a: [3,0], b: [3,3] }, targetPos: [3, 0.6], targetWallName: 'east wall', offsetMM: 600 }
+    };
 
-      if (currentLesson === 4) document.getElementById('l4-phase-label').textContent = `Sketch Roof (${roofSketchPoints.length}/4)`;
-      if (currentLesson === 5) document.getElementById('l5-progress-label').textContent = `Sketch roof (${roofSketchPoints.length}/4)`;
-
-      const remaining = 4 - roofSketchPoints.length;
-      if (remaining > 0) {
-        updateInstruction(`Corner ${roofSketchPoints.length} placed. Click ${remaining} more corner${remaining > 1 ? 's' : ''}`);
-        setStatus(`Roof: ${roofSketchPoints.length}/4 corners`);
+    function handleWindowPlacement(p) {
+      const n = findNearestWall(p);
+      if (!n.wall || n.distance > 0.8) {
+        const targetWall = CH2_TARGETS[currentLesson].targetWallName;
+        updateInstruction(`Click on the ${targetWall} to place the window`);
+        setStatus('Click on a wall');
+        return;
       }
+      const ws = n.wall.userData.start, we = n.wall.userData.end;
+      const wallAngle = Math.atan2(we.z - ws.z, we.x - ws.x);
+      const win = createWindowMesh(n.point, wallAngle);
+      scene.add(win);
+      placedElements.push(win);
+      updateElementsList();
+      scoreAndComplete();
+    }
+
+    function handleRoofClick(p) {
+      const sp = snapToEndpoint(p); roofSketchPoints.push(sp.clone()); addSketchPoint(sp);
+      if (roofSketchPoints.length > 1) addSketchLine(roofSketchPoints[roofSketchPoints.length-2], sp);
+      if (currentChapter === 1 && currentLesson === 4) document.getElementById('l4-phase-label').textContent = `Sketch Roof (${roofSketchPoints.length}/4)`;
+      if (currentChapter === 1 && currentLesson === 5) document.getElementById('l5-progress-label').textContent = `Sketch roof (${roofSketchPoints.length}/4)`;
+      const rem = 4 - roofSketchPoints.length;
+      if (rem > 0) { updateInstruction(`Corner ${roofSketchPoints.length} placed. ${rem} more`); setStatus(`Roof: ${roofSketchPoints.length}/4`); }
       if (roofSketchPoints.length >= 4) {
         addSketchLine(roofSketchPoints[3], roofSketchPoints[0]);
         const roof = createRoofMesh(roofSketchPoints);
-        if (roof) {
-          scene.add(roof); placedElements.push(roof);
-          if (currentLesson === 5) l5Elements.push(roof);
-          updateElementsList();
-        }
-        roofSketchLines.forEach(obj => scene.remove(obj));
-        roofSketchLines = [];
-        clearRoofGuides();
+        if (roof) { scene.add(roof); placedElements.push(roof); if (currentLesson === 5) l5Elements.push(roof); updateElementsList(); }
+        roofSketchLines.forEach(o => scene.remove(o)); roofSketchLines = []; clearRoofGuides();
         if (currentLesson === 4) document.getElementById('l4-phase-label').textContent = 'Complete';
         if (currentLesson === 5) { l5Phase = 'done'; document.getElementById('l5-progress-label').textContent = 'Complete'; }
         scoreAndComplete();
       }
     }
 
-    // ── Mouse move for wall preview ───────────────────────────────
     canvas.addEventListener('mousemove', (e) => {
-      if (wallStartPoint && (currentLesson <= 3 || (currentLesson === 5 && l5Phase === 'walls'))) {
-        const p = getGroundPoint(e);
-        if (p) createWallPreview(wallStartPoint, p);
+      if (wallStartPoint && (currentLesson <= 3 || (currentChapter === 1 && currentLesson === 5 && l5Phase === 'walls'))) {
+        const p = getGroundPoint(e); if (p) createWallPreview(wallStartPoint, p);
       }
     });
 
     // ── Scoring ───────────────────────────────────────────────────
     const LESSON_TARGETS = {
-      1: { type: 'wall', start: [0, 0], end: [3, 0] },
-      2: { type: 'wall', start: [0, 0], end: [0, 3] },
-      3: { type: 'walls', walls: [{ start: [3, 0], end: [3, 3] }, { start: [0, 3], end: [3, 3] }] },
-      4: {
-        type: 'door_and_roof',
-        roofCorners: [[0,0],[3,0],[3,3],[0,3]], roofArea: 9.0,
-        wallSegments: [{ a:[0,0], b:[3,0] }, { a:[0,0], b:[0,3] }, { a:[3,0], b:[3,3] }, { a:[0,3], b:[3,3] }]
-      },
-      5: {
-        type: 'final_challenge',
-        walls: [{ start:[0,0], end:[3,0] }, { start:[0,0], end:[0,3] }, { start:[3,0], end:[3,3] }, { start:[0,3], end:[3,3] }],
-        roofCorners: [[0,0],[3,0],[3,3],[0,3]], roofArea: 9.0,
-        wallSegments: [{ a:[0,0], b:[3,0] }, { a:[0,0], b:[0,3] }, { a:[3,0], b:[3,3] }, { a:[0,3], b:[3,3] }],
-        doorTarget: { wall: { a: [0, 0], b: [3, 0] }, position: [1.5, 0] }
-      }
+      1: { start: [0,0], end: [3,0] },
+      2: { start: [0,0], end: [0,3] },
+      3: { walls: [{ start:[3,0], end:[3,3] }, { start:[0,3], end:[3,3] }] },
+      4: { roofCorners: [[0,0],[3,0],[3,3],[0,3]], roofArea: 9.0, wallSegments: [{ a:[0,0], b:[3,0] },{ a:[0,0], b:[0,3] },{ a:[3,0], b:[3,3] },{ a:[0,3], b:[3,3] }] },
+      5: { walls: [{ start:[0,0], end:[3,0] },{ start:[0,0], end:[0,3] },{ start:[3,0], end:[3,3] },{ start:[0,3], end:[3,3] }],
+           roofCorners: [[0,0],[3,0],[3,3],[0,3]], roofArea: 9.0,
+           wallSegments: [{ a:[0,0], b:[3,0] },{ a:[0,0], b:[0,3] },{ a:[3,0], b:[3,3] },{ a:[0,3], b:[3,3] }],
+           doorTarget: { wall: { a:[0,0], b:[3,0] }, position: [1.5, 0] } }
     };
 
-    function scoreEndpoint(dist) {
-      if (dist < 0.02) return 100;
-      return Math.max(0, Math.round(100 - dist * 70));
-    }
+    function scoreEndpoint(dist) { return dist < 0.02 ? 100 : Math.max(0, Math.round(100 - dist * 70)); }
 
     function scoreWall(wall, target) {
-      const ws = wall.userData.start, we = wall.userData.end;
-      const ts = new THREE.Vector3(target.start[0], 0, target.start[1]);
-      const te = new THREE.Vector3(target.end[0], 0, target.end[1]);
-      const d1s = ws.distanceTo(ts), d1e = we.distanceTo(te);
-      const d2s = ws.distanceTo(te), d2e = we.distanceTo(ts);
-      let startDist, endDist;
-      if (d1s + d1e <= d2s + d2e) { startDist = d1s; endDist = d1e; }
-      else { startDist = d2s; endDist = d2e; }
-      const posScore = (scoreEndpoint(startDist) + scoreEndpoint(endDist)) / 2;
-      const targetLen = ts.distanceTo(te), actualLen = ws.distanceTo(we);
-      const lenDiff = actualLen - targetLen;
-      const lenScore = Math.max(0, Math.round(100 * (1 - Math.abs(lenDiff) / targetLen * 3)));
-      const targetDx = Math.abs(target.end[0] - target.start[0]), targetDz = Math.abs(target.end[1] - target.start[1]);
-      let alignScore = 100;
-      if (targetDx < 0.01 || targetDz < 0.01) {
-        const wallDx = Math.abs(ws.x - we.x), wallDz = Math.abs(ws.z - we.z);
-        alignScore = targetDx < 0.01 ? Math.max(0, Math.round(100 - wallDx * 150)) : Math.max(0, Math.round(100 - wallDz * 150));
-      }
-      const total = Math.round(posScore * 0.50 + lenScore * 0.30 + alignScore * 0.20);
-      return { total, posScore: Math.round(posScore), lenScore: Math.round(lenScore), alignScore: Math.round(alignScore),
-        startDist: Math.round(startDist * 1000), endDist: Math.round(endDist * 1000),
-        lenErrorMM: Math.round(Math.abs(lenDiff) * 1000), lenDiffMM: Math.round(lenDiff * 1000),
-        targetLenMM: Math.round(targetLen * 1000), actualLenMM: Math.round(actualLen * 1000) };
+      const ws=wall.userData.start, we=wall.userData.end;
+      const ts=new THREE.Vector3(target.start[0],0,target.start[1]), te=new THREE.Vector3(target.end[0],0,target.end[1]);
+      const d1=ws.distanceTo(ts)+we.distanceTo(te), d2=ws.distanceTo(te)+we.distanceTo(ts);
+      let sd, ed; if (d1<=d2) { sd=ws.distanceTo(ts); ed=we.distanceTo(te); } else { sd=ws.distanceTo(te); ed=we.distanceTo(ts); }
+      const ps=(scoreEndpoint(sd)+scoreEndpoint(ed))/2;
+      const tl=ts.distanceTo(te), al=ws.distanceTo(we), ld=al-tl;
+      const ls=Math.max(0,Math.round(100*(1-Math.abs(ld)/tl*3)));
+      const tdx=Math.abs(target.end[0]-target.start[0]), tdz=Math.abs(target.end[1]-target.start[1]);
+      let as=100;
+      if (tdx<0.01||tdz<0.01) { const wdx=Math.abs(ws.x-we.x), wdz=Math.abs(ws.z-we.z); as=tdx<0.01?Math.max(0,Math.round(100-wdx*150)):Math.max(0,Math.round(100-wdz*150)); }
+      return { total: Math.round(ps*0.5+ls*0.3+as*0.2), posScore:Math.round(ps), lenScore:Math.round(ls), alignScore:Math.round(as), startDist:Math.round(sd*1000), endDist:Math.round(ed*1000), lenErrorMM:Math.round(Math.abs(ld)*1000), lenDiffMM:Math.round(ld*1000), targetLenMM:Math.round(tl*1000), actualLenMM:Math.round(al*1000) };
     }
 
     function findBestTargetMatch(wall, targets) {
-      const ws = wall.userData.start, we = wall.userData.end;
-      let bestScore = -1, bestIdx = 0, bestResult = null;
-      targets.forEach((t, i) => {
-        const ts = new THREE.Vector3(t.start[0], 0, t.start[1]), te = new THREE.Vector3(t.end[0], 0, t.end[1]);
-        const d1 = ws.distanceTo(ts) + we.distanceTo(te), d2 = ws.distanceTo(te) + we.distanceTo(ts);
-        const sc = Math.max(0, 100 - Math.min(d1, d2) * 70);
-        if (sc > bestScore) { bestScore = sc; bestIdx = i; bestResult = t; }
-      });
-      const targetLen = new THREE.Vector3(bestResult.start[0], 0, bestResult.start[1]).distanceTo(new THREE.Vector3(bestResult.end[0], 0, bestResult.end[1]));
-      return { idx: bestIdx, target: bestResult, targetLenMM: Math.round(targetLen * 1000) };
+      const ws=wall.userData.start, we=wall.userData.end; let bs=-1, bi=0, br=null;
+      targets.forEach((t,i) => { const ts=new THREE.Vector3(t.start[0],0,t.start[1]), te=new THREE.Vector3(t.end[0],0,t.end[1]); const sc=Math.max(0,100-Math.min(ws.distanceTo(ts)+we.distanceTo(te), ws.distanceTo(te)+we.distanceTo(ts))*70); if (sc>bs) { bs=sc; bi=i; br=t; } });
+      return { idx: bi, target: br, targetLenMM: Math.round(new THREE.Vector3(br.start[0],0,br.start[1]).distanceTo(new THREE.Vector3(br.end[0],0,br.end[1]))*1000) };
     }
 
-    function pointToSegmentDist(px, pz, ax, az, bx, bz) {
-      const dx = bx - ax, dz = bz - az, lenSq = dx * dx + dz * dz;
-      if (lenSq < 0.0001) return Math.sqrt((px - ax) ** 2 + (pz - az) ** 2);
-      let t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / lenSq));
-      return Math.sqrt((px - (ax + t * dx)) ** 2 + (pz - (az + t * dz)) ** 2);
+    function pointToSegmentDist(px,pz,ax,az,bx,bz) {
+      const dx=bx-ax, dz=bz-az, ls=dx*dx+dz*dz;
+      if (ls<0.0001) return Math.sqrt((px-ax)**2+(pz-az)**2);
+      const t=Math.max(0,Math.min(1,((px-ax)*dx+(pz-az)*dz)/ls));
+      return Math.sqrt((px-(ax+t*dx))**2+(pz-(az+t*dz))**2);
     }
 
     function scoreDoor(doorPos, wallSegments) {
-      let minDist = Infinity;
-      for (const seg of wallSegments) {
-        const d = pointToSegmentDist(doorPos.x, doorPos.z, seg.a[0], seg.a[1], seg.b[0], seg.b[1]);
-        if (d < minDist) minDist = d;
-      }
-      if (minDist < 0.15) return { score: 100, distMM: Math.round(minDist * 1000) };
-      return { score: Math.max(0, Math.round(100 - (minDist - 0.15) * 120)), distMM: Math.round(minDist * 1000) };
+      let md=Infinity; for (const s of wallSegments) { const d=pointToSegmentDist(doorPos.x,doorPos.z,s.a[0],s.a[1],s.b[0],s.b[1]); if (d<md) md=d; }
+      return md<0.15 ? { score:100, distMM:Math.round(md*1000) } : { score:Math.max(0,Math.round(100-(md-0.15)*120)), distMM:Math.round(md*1000) };
     }
 
-    // L5 door scoring: checks correct wall AND position accuracy
     function scoreDoorChallenge(doorPos, doorTarget) {
-      const tw = doorTarget.wall;
-      const distToTargetWall = pointToSegmentDist(doorPos.x, doorPos.z, tw.a[0], tw.a[1], tw.b[0], tw.b[1]);
-      const onCorrectWall = distToTargetWall <= WALL_THICKNESS;
-
-      if (!onCorrectWall) {
-        return { score: 0, onCorrectWall: false, wallDistMM: Math.round(distToTargetWall * 1000), posDist: 0, posDistMM: 0 };
-      }
-
-      const tp = new THREE.Vector3(doorTarget.position[0], 0, doorTarget.position[1]);
-      const posDist = Math.sqrt((doorPos.x - tp.x) ** 2 + (doorPos.z - tp.z) ** 2);
-      const posScore = scoreEndpoint(posDist);
-
-      return {
-        score: posScore,
-        onCorrectWall: true,
-        wallDistMM: Math.round(distToTargetWall * 1000),
-        posDistMM: Math.round(posDist * 1000)
-      };
+      const tw=doorTarget.wall, dtw=pointToSegmentDist(doorPos.x,doorPos.z,tw.a[0],tw.a[1],tw.b[0],tw.b[1]);
+      if (dtw>WALL_THICKNESS) return { score:0, onCorrectWall:false, wallDistMM:Math.round(dtw*1000), posDistMM:0 };
+      const tp=new THREE.Vector3(doorTarget.position[0],0,doorTarget.position[1]);
+      const pd=Math.sqrt((doorPos.x-tp.x)**2+(doorPos.z-tp.z)**2);
+      return { score:scoreEndpoint(pd), onCorrectWall:true, wallDistMM:Math.round(dtw*1000), posDistMM:Math.round(pd*1000) };
     }
 
-    function scoreRoof(placedPoints, target) {
-      const idealCorners = target.roofCorners.map(c => new THREE.Vector2(c[0], c[1]));
-      const used = new Set(); let totalCornerDist = 0; const cornerScores = [];
-      for (const pp of placedPoints) {
-        const p2 = new THREE.Vector2(pp.x, pp.z);
-        let bestDist = Infinity, bestIdx = -1;
-        idealCorners.forEach((ic, idx) => { if (!used.has(idx)) { const d = p2.distanceTo(ic); if (d < bestDist) { bestDist = d; bestIdx = idx; } } });
-        if (bestIdx >= 0) used.add(bestIdx);
-        totalCornerDist += bestDist; cornerScores.push(scoreEndpoint(bestDist));
-      }
-      const cornerScore = cornerScores.length > 0 ? Math.round(cornerScores.reduce((a, b) => a + b, 0) / cornerScores.length) : 0;
-      const actualArea = Math.abs(shoelaceArea(placedPoints));
-      const areaScore = Math.max(0, Math.round(100 * (1 - Math.abs(actualArea - target.roofArea) / target.roofArea * 4)));
-      let angleScore = 100;
-      if (placedPoints.length === 4) {
-        let penalty = 0;
-        for (let i = 0; i < 4; i++) {
-          const a = placedPoints[i], b = placedPoints[(i+1)%4], c = placedPoints[(i+2)%4];
-          const v1 = new THREE.Vector2(a.x-b.x, a.z-b.z), v2 = new THREE.Vector2(c.x-b.x, c.z-b.z);
-          penalty += Math.abs(Math.atan2(Math.abs(v1.x*v2.y-v1.y*v2.x), Math.abs(v1.dot(v2))) - Math.PI/2) * (180/Math.PI);
-        }
-        angleScore = Math.max(0, Math.round(100 - penalty * 2));
-      }
-      const total = Math.round(cornerScore * 0.45 + areaScore * 0.30 + angleScore * 0.25);
-      return { total, cornerScore, areaScore, angleScore, actualArea: Math.round(actualArea * 100) / 100,
-        avgCornerDistMM: Math.round((totalCornerDist / Math.max(1, placedPoints.length)) * 1000) };
+    function scoreWindowPlacement(winPos, target) {
+      const tw = target.wall;
+      const dtw = pointToSegmentDist(winPos.x, winPos.z, tw.a[0], tw.a[1], tw.b[0], tw.b[1]);
+      if (dtw > WALL_THICKNESS) return { score: 0, onCorrectWall: false, wallDistMM: Math.round(dtw * 1000), posDistMM: 0 };
+      const tp = new THREE.Vector3(target.targetPos[0], 0, target.targetPos[1]);
+      const pd = Math.sqrt((winPos.x - tp.x) ** 2 + (winPos.z - tp.z) ** 2);
+      return { score: scoreEndpoint(pd), onCorrectWall: true, wallDistMM: Math.round(dtw * 1000), posDistMM: Math.round(pd * 1000) };
     }
 
-    function shoelaceArea(points) {
-      let area = 0; const n = points.length;
-      for (let i = 0; i < n; i++) { const j = (i+1) % n; area += points[i].x * points[j].z - points[j].x * points[i].z; }
-      return area / 2;
+    function scoreRoof(pts, target) {
+      const ic=target.roofCorners.map(c=>new THREE.Vector2(c[0],c[1])); const used=new Set(); let td=0; const cs=[];
+      for (const pp of pts) { const p2=new THREE.Vector2(pp.x,pp.z); let bd=Infinity,bi=-1; ic.forEach((c,i)=>{if(!used.has(i)){const d=p2.distanceTo(c);if(d<bd){bd=d;bi=i;}}}); if(bi>=0)used.add(bi); td+=bd; cs.push(scoreEndpoint(bd)); }
+      const csc=cs.length?Math.round(cs.reduce((a,b)=>a+b,0)/cs.length):0;
+      const aa=Math.abs(shoelaceArea(pts)), asc=Math.max(0,Math.round(100*(1-Math.abs(aa-target.roofArea)/target.roofArea*4)));
+      let ang=100; if(pts.length===4){let pen=0;for(let i=0;i<4;i++){const a=pts[i],b=pts[(i+1)%4],c=pts[(i+2)%4];const v1=new THREE.Vector2(a.x-b.x,a.z-b.z),v2=new THREE.Vector2(c.x-b.x,c.z-b.z);pen+=Math.abs(Math.atan2(Math.abs(v1.x*v2.y-v1.y*v2.x),Math.abs(v1.dot(v2)))-Math.PI/2)*(180/Math.PI);}ang=Math.max(0,Math.round(100-pen*2));}
+      return { total:Math.round(csc*0.45+asc*0.3+ang*0.25), cornerScore:csc, areaScore:asc, angleScore:ang, actualArea:Math.round(aa*100)/100, avgCornerDistMM:Math.round(td/Math.max(1,pts.length)*1000) };
     }
+    function shoelaceArea(pts) { let a=0; for(let i=0;i<pts.length;i++){const j=(i+1)%pts.length;a+=pts[i].x*pts[j].z-pts[j].x*pts[i].z;} return a/2; }
 
     function checkRoomClosure(walls) {
-      if (walls.length < 4) return 0;
-      const ideal = [[0,0,0],[3,0,0],[3,0,3],[0,0,3]].map(c => new THREE.Vector3(...c));
-      const eps = []; walls.forEach(w => { eps.push(w.userData.start.clone()); eps.push(w.userData.end.clone()); });
-      let td = 0;
-      for (const corner of ideal) { let md = Infinity; for (const ep of eps) { const d = corner.distanceTo(ep); if (d < md) md = d; } td += md; }
-      return Math.max(0, Math.round(100 - (td / 4) * 80));
+      if (walls.length<4) return 0;
+      const ideal=[[0,0,0],[3,0,0],[3,0,3],[0,0,3]].map(c=>new THREE.Vector3(...c));
+      const eps=[]; walls.forEach(w=>{eps.push(w.userData.start.clone());eps.push(w.userData.end.clone());});
+      let td=0; for(const c of ideal){let md=Infinity;for(const e of eps){const d=c.distanceTo(e);if(d<md)md=d;}td+=md;}
+      return Math.max(0,Math.round(100-(td/4)*80));
     }
 
-    // ── Educational Tip Generator ─────────────────────────────────
-    function generateTip(lesson, scoreData) {
-      if (lesson === 1 || lesson === 2) {
-        const r = scoreData;
-        if (r.total >= 95) return 'Perfect placement. In Revit, precise endpoints are critical for wall joins and room boundaries.';
-        if (r.lenScore < 80) { const dir = r.lenDiffMM > 0 ? 'long' : 'short'; return `Your wall was ${Math.abs(r.lenDiffMM)} mm too ${dir} (${r.actualLenMM} mm vs ${r.targetLenMM} mm target). Use the live measurement bar to check length before clicking.`; }
-        if (r.posScore < 80) return `Start/end points were off by ${r.startDist} mm and ${r.endDist} mm. Use endpoint snapping (green cursor) to lock onto existing geometry.`;
-        if (r.alignScore < 80) return 'Wall is not axis-aligned. In Revit, hold Shift while drawing to constrain to horizontal/vertical.';
-        return 'Good work. Try to match the target coordinates exactly for a higher score.';
-      }
-      if (lesson === 3) return scoreData >= 90 ? 'Clean room enclosure. Enclosed rooms are needed before placing floors, ceilings, or computing areas.' : 'Make sure each wall connects to the existing corners. Use the green snap indicator to align endpoints.';
-      if (lesson === 4) return 'In Revit, doors are wall-hosted elements and roofs are sketched by tracing the building footprint.';
-      if (lesson === 5) {
-        if (scoreData >= PASS_THRESHOLD) return 'You passed the Final Challenge! You demonstrated you can build a complete room from scratch — walls, door, and roof.';
-        return 'Review the reference image and try again. Focus on placing walls at the exact coordinates, snapping the door onto a wall, and tracing the roof at the room corners.';
-      }
-      return '';
-    }
-
+    // ── Score and Complete ─────────────────────────────────────────
     function scoreAndComplete() {
-      const target = LESSON_TARGETS[currentLesson];
-      let score = 0, details = [], tipData = null;
+      let score = 0, details = [], tip = '';
 
-      if (currentLesson === 1 || currentLesson === 2) {
-        const lastWall = placedElements.filter(el => el.userData?.type === 'wall').slice(-1)[0];
-        if (lastWall) {
-          const r = scoreWall(lastWall, target);
-          score = r.total; tipData = r;
-          details.push({ label: 'Endpoint accuracy', value: `${r.posScore}%`, sub: `Start: ${r.startDist} mm off · End: ${r.endDist} mm off`, color: r.posScore >= PASS_THRESHOLD ? '#34D399' : r.posScore >= 60 ? '#F5620F' : '#EF4444' });
-          details.push({ label: 'Length accuracy', value: `${r.lenScore}%`, sub: `${r.actualLenMM} mm placed (target: ${r.targetLenMM} mm)`, color: r.lenScore >= PASS_THRESHOLD ? '#34D399' : r.lenScore >= 60 ? '#F5620F' : '#EF4444' });
-          details.push({ label: 'Axis alignment', value: `${r.alignScore}%`, color: r.alignScore >= PASS_THRESHOLD ? '#34D399' : r.alignScore >= 60 ? '#F5620F' : '#EF4444' });
-        }
-      } else if (currentLesson === 3) {
-        if (l3Walls.length >= L3_REQUIRED_WALLS) {
-          const targetLabels = { 0: 'East wall', 1: 'North wall' };
-          const usedTargets = new Set(); let totalScore = 0;
-          const matches = l3Walls.map(wall => ({ wall, ...findBestTargetMatch(wall, target.walls) }));
-          matches.sort((a, b) => scoreWall(b.wall, b.target).total - scoreWall(a.wall, a.target).total);
-          for (const m of matches) {
-            let t = m.target, tIdx = m.idx;
-            if (usedTargets.has(tIdx)) { tIdx = tIdx === 0 ? 1 : 0; t = target.walls[tIdx]; }
-            usedTargets.add(tIdx);
-            const r = scoreWall(m.wall, t); totalScore += r.total;
-            details.push({ label: targetLabels[tIdx], value: `${r.total}%`, sub: `${r.actualLenMM} mm (target: ${r.targetLenMM} mm)`, color: r.total >= PASS_THRESHOLD ? '#34D399' : r.total >= 60 ? '#F5620F' : '#EF4444' });
-            m.wall.material.color.setHex(r.total >= PASS_THRESHOLD ? 0xCCCCCC : r.total >= 60 ? 0xE8C86A : 0xEF6B6B);
+      if (currentChapter === 1) {
+        const target = LESSON_TARGETS[currentLesson];
+        if (currentLesson === 1 || currentLesson === 2) {
+          const lw = placedElements.filter(el=>el.userData?.type==='wall').slice(-1)[0];
+          if (lw) { const r=scoreWall(lw,target); score=r.total;
+            details.push({label:'Endpoint accuracy',value:`${r.posScore}%`,sub:`Start: ${r.startDist}mm off · End: ${r.endDist}mm off`,color:r.posScore>=PASS_THRESHOLD?'#34D399':r.posScore>=60?'#F5620F':'#EF4444'});
+            details.push({label:'Length accuracy',value:`${r.lenScore}%`,sub:`${r.actualLenMM}mm (target: ${r.targetLenMM}mm)`,color:r.lenScore>=PASS_THRESHOLD?'#34D399':r.lenScore>=60?'#F5620F':'#EF4444'});
+            details.push({label:'Axis alignment',value:`${r.alignScore}%`,color:r.alignScore>=PASS_THRESHOLD?'#34D399':r.alignScore>=60?'#F5620F':'#EF4444'});
+            if (r.total>=95) tip='Perfect placement. Precise endpoints are critical for wall joins.';
+            else if (r.lenScore<80) { const dir=r.lenDiffMM>0?'long':'short'; tip=`Wall was ${Math.abs(r.lenDiffMM)}mm too ${dir}. Use the measurement bar.`; }
+            else if (r.posScore<80) tip=`Endpoints off by ${r.startDist}mm and ${r.endDist}mm. Use snap indicators.`;
+            else tip='Good work. Match coordinates exactly for a higher score.';
           }
-          score = Math.round(totalScore / L3_REQUIRED_WALLS);
-          const closureScore = checkRoomClosure(placedElements.filter(el => el.userData?.type === 'wall'));
-          details.push({ label: 'Room closure', value: `${closureScore}%`, color: closureScore >= PASS_THRESHOLD ? '#34D399' : closureScore >= 60 ? '#F5620F' : '#EF4444' });
-          score = Math.round(score * 0.75 + closureScore * 0.25);
-          tipData = score;
+        } else if (currentLesson===3) {
+          if (l3Walls.length>=L3_REQUIRED_WALLS) {
+            const tl={0:'East wall',1:'North wall'}; const ut=new Set(); let ts=0;
+            const m=l3Walls.map(w=>({wall:w,...findBestTargetMatch(w,target.walls)}));
+            m.sort((a,b)=>scoreWall(b.wall,b.target).total-scoreWall(a.wall,a.target).total);
+            for(const mm of m){let t=mm.target,ti=mm.idx;if(ut.has(ti)){ti=ti===0?1:0;t=target.walls[ti];}ut.add(ti);const r=scoreWall(mm.wall,t);ts+=r.total;details.push({label:tl[ti],value:`${r.total}%`,sub:`${r.actualLenMM}mm (target: ${r.targetLenMM}mm)`,color:r.total>=PASS_THRESHOLD?'#34D399':r.total>=60?'#F5620F':'#EF4444'});mm.wall.material.color.setHex(r.total>=PASS_THRESHOLD?0xCCCCCC:r.total>=60?0xE8C86A:0xEF6B6B);}
+            score=Math.round(ts/L3_REQUIRED_WALLS);
+            const cl=checkRoomClosure(placedElements.filter(el=>el.userData?.type==='wall'));
+            details.push({label:'Room closure',value:`${cl}%`,color:cl>=PASS_THRESHOLD?'#34D399':cl>=60?'#F5620F':'#EF4444'});
+            score=Math.round(score*0.75+cl*0.25);
+            tip=score>=90?'Clean room enclosure.':'Connect walls to existing corners using snap indicators.';
+          }
+        } else if (currentLesson===4) {
+          const de=placedElements.find(el=>el.userData?.type==='door'), re=placedElements.find(el=>el.userData?.type==='roof');
+          let ds=0,rs=0;
+          if(de){const dr=scoreDoor(de.userData.position,target.wallSegments);ds=dr.score;details.push({label:'Door on-wall',value:`${dr.score}%`,sub:`${dr.distMM}mm from wall`,color:dr.score>=PASS_THRESHOLD?'#34D399':dr.score>=60?'#F5620F':'#EF4444'});}
+          else details.push({label:'Door',value:'Missing',color:'#EF4444'});
+          if(re){const rr=scoreRoof(re.userData.points,target);rs=rr.total;details.push({label:'Roof corners',value:`${rr.cornerScore}%`,sub:`Avg ${rr.avgCornerDistMM}mm off`,color:rr.cornerScore>=PASS_THRESHOLD?'#34D399':rr.cornerScore>=60?'#F5620F':'#EF4444'});details.push({label:'Roof area',value:`${rr.areaScore}%`,sub:`${rr.actualArea}m² (target: 9.0)`,color:rr.areaScore>=PASS_THRESHOLD?'#34D399':rr.areaScore>=60?'#F5620F':'#EF4444'});}
+          else details.push({label:'Roof',value:'Missing',color:'#EF4444'});
+          score=Math.round(ds*0.3+rs*0.7); tip='Doors are wall-hosted. Roofs trace the building footprint.';
+        } else if (currentLesson===5) {
+          const ut=new Set(); let wt=0;
+          const wm=l5Walls.map(w=>({wall:w,...findBestTargetMatch(w,target.walls)}));
+          wm.sort((a,b)=>scoreWall(b.wall,b.target).total-scoreWall(a.wall,a.target).total);
+          const wn=['South','West','East','North'];
+          for(const mm of wm){let t=mm.target,ti=mm.idx;if(ut.has(ti)){for(let j=0;j<target.walls.length;j++)if(!ut.has(j)){ti=j;t=target.walls[j];break;}}ut.add(ti);const r=scoreWall(mm.wall,t);wt+=r.total;details.push({label:`${wn[ti]} wall`,value:`${r.total}%`,sub:`${r.actualLenMM}mm (target: ${r.targetLenMM}mm)`,color:r.total>=PASS_THRESHOLD?'#34D399':r.total>=60?'#F5620F':'#EF4444'});}
+          const wa=Math.round(wt/L5_REQUIRED_WALLS);
+          const de=l5Elements.find(el=>el.userData?.type==='door'); let ds=0;
+          if(de){const dr=scoreDoorChallenge(de.userData.position,target.doorTarget);ds=dr.score;details.push(dr.onCorrectWall?{label:'Door placement',value:`${dr.score}%`,sub:`${dr.posDistMM}mm from target`,color:dr.score>=PASS_THRESHOLD?'#34D399':dr.score>=60?'#F5620F':'#EF4444'}:{label:'Door',value:'0%',sub:'Wrong wall',color:'#EF4444'});}
+          else details.push({label:'Door',value:'Missing',color:'#EF4444'});
+          const re=l5Elements.find(el=>el.userData?.type==='roof'); let rs=0;
+          if(re){const rr=scoreRoof(re.userData.points,target);rs=rr.total;details.push({label:'Roof',value:`${rr.total}%`,sub:`${rr.actualArea}m²`,color:rr.total>=PASS_THRESHOLD?'#34D399':rr.total>=60?'#F5620F':'#EF4444'});}
+          else details.push({label:'Roof',value:'Missing',color:'#EF4444'});
+          const cl=checkRoomClosure(l5Walls); details.push({label:'Closure',value:`${cl}%`,color:cl>=PASS_THRESHOLD?'#34D399':cl>=60?'#F5620F':'#EF4444'});
+          score=Math.round(wa*0.4+ds*0.15+rs*0.25+cl*0.2);
+          tip=score>=PASS_THRESHOLD?'You passed! You can build a complete room from scratch.':'Review the reference and retry. Focus on exact coordinates.';
         }
-      } else if (currentLesson === 4) {
-        const doorEl = placedElements.find(el => el.userData?.type === 'door');
-        const roofEl = placedElements.find(el => el.userData?.type === 'roof');
-        let doorScore = 0, roofScore = 0;
-        if (doorEl) { const dr = scoreDoor(doorEl.userData.position, target.wallSegments); doorScore = dr.score; details.push({ label: 'Door on-wall', value: `${dr.score}%`, sub: `${dr.distMM} mm from wall`, color: dr.score >= PASS_THRESHOLD ? '#34D399' : dr.score >= 60 ? '#F5620F' : '#EF4444' }); }
-        else details.push({ label: 'Door placed', value: 'No', color: '#EF4444' });
-        if (roofEl) { const rr = scoreRoof(roofEl.userData.points, target); roofScore = rr.total; details.push({ label: 'Roof corners', value: `${rr.cornerScore}%`, sub: `Avg ${rr.avgCornerDistMM} mm off`, color: rr.cornerScore >= PASS_THRESHOLD ? '#34D399' : rr.cornerScore >= 60 ? '#F5620F' : '#EF4444' }); details.push({ label: 'Roof area', value: `${rr.areaScore}%`, sub: `${rr.actualArea} m² (target: 9.0)`, color: rr.areaScore >= PASS_THRESHOLD ? '#34D399' : rr.areaScore >= 60 ? '#F5620F' : '#EF4444' }); details.push({ label: 'Shape', value: `${rr.angleScore}%`, color: rr.angleScore >= PASS_THRESHOLD ? '#34D399' : rr.angleScore >= 60 ? '#F5620F' : '#EF4444' }); }
-        else details.push({ label: 'Roof', value: 'No', color: '#EF4444' });
-        score = Math.round(doorScore * 0.30 + roofScore * 0.70);
-        tipData = score;
 
-      // ── Lesson 5 scoring: reuses all existing scorers ───────────
-      } else if (currentLesson === 5) {
-        // Score all 4 walls (best-match to targets, order-independent)
-        const usedTargets = new Set(); let wallTotal = 0;
-        const wallMatches = l5Walls.map(wall => ({ wall, ...findBestTargetMatch(wall, target.walls) }));
-        wallMatches.sort((a, b) => scoreWall(b.wall, b.target).total - scoreWall(a.wall, a.target).total);
-        const wallNames = ['South', 'West', 'East', 'North'];
-        for (const m of wallMatches) {
-          let t = m.target, tIdx = m.idx;
-          if (usedTargets.has(tIdx)) { for (let j = 0; j < target.walls.length; j++) { if (!usedTargets.has(j)) { tIdx = j; t = target.walls[j]; break; } } }
-          usedTargets.add(tIdx);
-          const r = scoreWall(m.wall, t); wallTotal += r.total;
-          details.push({ label: `${wallNames[tIdx]} wall`, value: `${r.total}%`, sub: `${r.actualLenMM} mm (target: ${r.targetLenMM} mm)`, color: r.total >= PASS_THRESHOLD ? '#34D399' : r.total >= 60 ? '#F5620F' : '#EF4444' });
-        }
-        const wallAvg = Math.round(wallTotal / L5_REQUIRED_WALLS);
-
-        const doorEl = l5Elements.find(el => el.userData?.type === 'door');
-        let doorScore = 0;
-        if (doorEl) {
-          const dr = scoreDoorChallenge(doorEl.userData.position, target.doorTarget);
-          doorScore = dr.score;
-          if (!dr.onCorrectWall) {
-            details.push({ label: 'Door placement', value: '0%', sub: 'Wrong wall — should be on south wall (0,0)→(3000,0)', color: '#EF4444' });
+      } else if (currentChapter === 2) {
+        const target = CH2_TARGETS[currentLesson];
+        const lastWin = placedElements.filter(el => el.userData?.type === 'window').slice(-1)[0];
+        if (lastWin) {
+          const r = scoreWindowPlacement(lastWin.userData.position, target);
+          score = r.score;
+          if (!r.onCorrectWall) {
+            details.push({ label: 'Wall selection', value: '0%', sub: `Should be on the ${target.targetWallName}`, color: '#EF4444' });
+            tip = `Place the window on the ${target.targetWallName}. Click directly on that wall.`;
           } else {
-            details.push({ label: 'Door placement', value: `${dr.score}%`, sub: `${dr.posDistMM} mm from target position (1500, 0)`, color: dr.score >= PASS_THRESHOLD ? '#34D399' : dr.score >= 60 ? '#F5620F' : '#EF4444' });
+            details.push({ label: 'Wall selection', value: '100%', sub: `Correct — ${target.targetWallName}`, color: '#34D399' });
+            details.push({ label: 'Position accuracy', value: `${r.score}%`, sub: `${r.posDistMM} mm from target position`, color: r.score >= PASS_THRESHOLD ? '#34D399' : r.score >= 60 ? '#F5620F' : '#EF4444' });
+            if (currentLesson === 2 && r.posDistMM > 0) {
+              tip = `Target was 600mm from the corner. You were ${r.posDistMM}mm from target. Use the cursor coordinates to guide placement.`;
+            } else if (r.score >= 95) {
+              tip = 'Excellent window placement. Wall-hosted families automatically align to the host wall.';
+            } else {
+              tip = 'Windows snap to walls like doors. Check cursor coordinates before clicking.';
+            }
           }
-        } else details.push({ label: 'Door', value: 'Missing', color: '#EF4444' });
-
-        const roofEl = l5Elements.find(el => el.userData?.type === 'roof');
-        let roofScore = 0;
-        if (roofEl) { const rr = scoreRoof(roofEl.userData.points, target); roofScore = rr.total; details.push({ label: 'Roof accuracy', value: `${rr.total}%`, sub: `${rr.actualArea} m² · corners avg ${rr.avgCornerDistMM} mm off`, color: rr.total >= PASS_THRESHOLD ? '#34D399' : rr.total >= 60 ? '#F5620F' : '#EF4444' }); }
-        else details.push({ label: 'Roof', value: 'Missing', color: '#EF4444' });
-
-        const closureScore = checkRoomClosure(l5Walls);
-        details.push({ label: 'Room closure', value: `${closureScore}%`, color: closureScore >= PASS_THRESHOLD ? '#34D399' : closureScore >= 60 ? '#F5620F' : '#EF4444' });
-
-        score = Math.round(wallAvg * 0.40 + doorScore * 0.15 + roofScore * 0.25 + closureScore * 0.20);
-        tipData = score;
+        }
       }
 
-      lessonScores[currentLesson - 1] = score;
-      lessonsCompleted[currentLesson - 1] = true;
-      showResults(score, details, generateTip(currentLesson, tipData));
+      cState().scores[currentLesson - 1] = score;
+      cState().completed[currentLesson - 1] = true;
+      showResults(score, details, tip);
       updateProgress();
     }
 
     // ── Results Panel ─────────────────────────────────────────────
     function showResults(score, details, tip) {
-      const titles = { 1: 'Wall Placed!', 2: 'Second Wall Done!', 3: 'Room Enclosed!', 4: 'Door & Roof Complete!', 5: 'Final Challenge' };
-      document.getElementById('result-title').textContent = titles[currentLesson] || 'Complete!';
+      const ch = CHAPTERS[currentChapter];
+      const isChallenge = currentChapter === 1 && currentLesson === 5;
+      const xp = isChallenge ? score * 10 : 0;
+
+      let title = 'Lesson Complete!';
+      if (currentChapter === 1) {
+        const t = { 1:'Wall Placed!', 2:'Second Wall!', 3:'Room Enclosed!', 4:'Door & Roof!', 5:'Final Challenge' };
+        title = t[currentLesson] || title;
+      } else if (currentChapter === 2) {
+        title = currentLesson === 1 ? 'Window Placed!' : 'Window Positioned!';
+      }
+
+      document.getElementById('result-title').textContent = title;
       document.getElementById('score-value').textContent = score + '%';
+      document.getElementById('score-label').textContent = isChallenge ? `Score · ${xp} XP` : 'Score';
 
-      // XP display for L5
-      const xp = currentLesson === 5 ? score * 10 : 0;
-      document.getElementById('score-label').textContent = currentLesson === 5 ? `Score · ${xp} XP` : 'Score';
+      let fb;
+      if (isChallenge && score < PASS_THRESHOLD) fb = `Need ${PASS_THRESHOLD}%+ to pass`;
+      else if (score >= 95) fb = 'Outstanding precision!';
+      else if (score >= PASS_THRESHOLD) fb = isChallenge ? `Passed! ${xp} XP` : 'Good work — passed!';
+      else if (score >= 60) fb = 'Close, below 80% threshold';
+      else fb = 'Needs improvement';
+      document.getElementById('score-feedback').textContent = fb;
 
-      let feedbackText;
-      if (currentLesson === 5 && score < PASS_THRESHOLD) feedbackText = `Need ${PASS_THRESHOLD}%+ to pass — try again`;
-      else if (score >= 95) feedbackText = 'Outstanding precision!';
-      else if (score >= PASS_THRESHOLD) feedbackText = currentLesson === 5 ? `Passed! ${xp} XP earned` : 'Good work — passed!';
-      else if (score >= 60) feedbackText = 'Close, but below 80% threshold';
-      else feedbackText = 'Needs improvement — try again';
-      document.getElementById('score-feedback').textContent = feedbackText;
-
-      const badge = document.getElementById('score-badge');
-      const scoreVal = document.getElementById('score-value');
-      if (score >= 95) { badge.style.background = 'rgba(52, 211, 153, 0.15)'; scoreVal.style.color = '#34D399'; }
-      else if (score >= PASS_THRESHOLD) { badge.style.background = 'rgba(52, 211, 153, 0.10)'; scoreVal.style.color = '#34D399'; }
-      else if (score >= 60) { badge.style.background = 'rgba(245, 98, 15, 0.12)'; scoreVal.style.color = '#F5620F'; }
-      else { badge.style.background = 'rgba(239, 68, 68, 0.12)'; scoreVal.style.color = '#EF4444'; }
+      const badge = document.getElementById('score-badge'), sv = document.getElementById('score-value');
+      if (score>=95) { badge.style.background='rgba(52,211,153,0.15)'; sv.style.color='#34D399'; }
+      else if (score>=PASS_THRESHOLD) { badge.style.background='rgba(52,211,153,0.10)'; sv.style.color='#34D399'; }
+      else if (score>=60) { badge.style.background='rgba(245,98,15,0.12)'; sv.style.color='#F5620F'; }
+      else { badge.style.background='rgba(239,68,68,0.12)'; sv.style.color='#EF4444'; }
 
       document.getElementById('score-details').innerHTML = details.map(d => {
-        const cs = d.color ? ` style="color: ${d.color}"` : '';
-        let html = `<div class="flex items-center justify-between text-xs"><span class="text-dark-text">${d.label}</span><span class="font-medium"${cs}>${d.value}</span></div>`;
-        if (d.sub) html += `<div class="text-[10px] text-dark-text pl-1 mb-1" style="opacity: 0.7;">${d.sub}</div>`;
-        return html;
+        const cs = d.color ? ` style="color:${d.color}"` : '';
+        let h = `<div class="flex items-center justify-between text-xs"><span class="text-dark-text">${d.label}</span><span class="font-medium"${cs}>${d.value}</span></div>`;
+        if (d.sub) h += `<div class="text-[10px] text-dark-text pl-1 mb-1" style="opacity:0.7">${d.sub}</div>`;
+        return h;
       }).join('');
 
       const tipEl = document.getElementById('score-tip');
@@ -1258,58 +907,64 @@
       else tipEl.style.display = 'none';
 
       const btn = document.getElementById('btn-continue');
-      if (currentLesson === 5) {
-        if (score >= PASS_THRESHOLD) {
-          btn.innerHTML = 'View Chapter Summary <i class="fa-solid fa-trophy ml-1"></i>';
-          btn.onclick = showChapterComplete;
-          btn.style.background = '#34D399';
-        } else {
-          btn.innerHTML = 'Retry Challenge <i class="fa-solid fa-rotate-left ml-1"></i>';
-          btn.onclick = () => { hideResults(); switchLesson(5); };
-          btn.style.background = '#F5620F';
-        }
-        btn.style.display = '';
-      } else if (currentLesson < TOTAL_LESSONS) {
+      if (isChallenge) {
+        if (score >= PASS_THRESHOLD) { btn.innerHTML = 'View Chapter Summary <i class="fa-solid fa-trophy ml-1"></i>'; btn.onclick = showChapterComplete; btn.style.background = '#34D399'; }
+        else { btn.innerHTML = 'Retry Challenge <i class="fa-solid fa-rotate-left ml-1"></i>'; btn.onclick = () => { hideResults(); switchLesson(5); }; btn.style.background = '#F5620F'; }
+      } else if (currentLesson < totalLessons()) {
         btn.innerHTML = 'Continue to Next Lesson <i class="fa-solid fa-arrow-right ml-1"></i>';
-        btn.onclick = continueToNextLesson;
-        btn.style.display = '';
-        btn.style.background = '#F5620F';
+        btn.onclick = continueToNextLesson; btn.style.background = '#F5620F';
+      } else {
+        // Last lesson of a non-challenge chapter
+        btn.innerHTML = 'Chapter Complete <i class="fa-solid fa-trophy ml-1"></i>';
+        btn.onclick = showChapterComplete; btn.style.background = '#34D399';
       }
-
+      btn.style.display = '';
       document.getElementById('results-panel').classList.add('visible');
       setStatus('Lesson complete');
     }
 
-    function hideResults() {
-      document.getElementById('results-panel').classList.remove('visible');
-    }
+    function hideResults() { document.getElementById('results-panel').classList.remove('visible'); }
 
-    // ── Chapter Complete Screen ────────────────────────────────────
+    // ── Chapter Complete ──────────────────────────────────────────
     let chapterPreviewRenderer = null, chapterPreviewScene = null, chapterPreviewCamera = null, chapterPreviewAnim = null;
 
     function showChapterComplete() {
       hideResults();
-      const overall = Math.round(lessonScores.reduce((a, b) => a + b, 0) / TOTAL_LESSONS);
-      const totalXP = lessonScores[4] * 10;
-      const scoreEl = document.getElementById('ch-overall-score');
-      scoreEl.textContent = overall;
-      scoreEl.style.color = overall >= 90 ? '#34D399' : overall >= 70 ? '#F5620F' : '#EF4444';
+      const ch = CHAPTERS[currentChapter], st = cState();
+      const overall = Math.round(st.scores.reduce((a,b)=>a+b,0) / ch.totalLessons);
+      const totalXP = currentChapter === 1 ? st.scores[4] * 10 : overall * 5;
+
+      document.getElementById('ch-complete-title').textContent = `${ch.title.split('—')[0].trim()} Complete!`;
+      document.getElementById('ch-complete-subtitle').textContent = currentChapter === 1 ? 'You built your first room' : 'You added windows to your room';
+
+      const se = document.getElementById('ch-overall-score');
+      se.textContent = overall; se.style.color = overall>=90?'#34D399':overall>=70?'#F5620F':'#EF4444';
       document.getElementById('ch-xp-display').textContent = `${totalXP} XP`;
 
-      const lessonNames = ['Place First Wall', 'Place Second Wall', 'Complete Room', 'Door & Roof', 'Final Challenge'];
-      document.getElementById('ch-lesson-scores').innerHTML = lessonScores.map((s, i) => {
-        const color = s >= 90 ? '#34D399' : s >= 70 ? '#F5620F' : '#EF4444';
-        const icon = i === 4 ? '<i class="fa-solid fa-star text-[8px] mr-1"></i>' : '';
-        return `<div class="flex items-center justify-between text-xs"><span class="text-dark-text">${icon}${lessonNames[i]}</span><span class="font-medium" style="color: ${color};">${s}%</span></div>`;
+      document.getElementById('ch-lesson-scores').innerHTML = st.scores.map((s,i) => {
+        const c = s>=90?'#34D399':s>=70?'#F5620F':'#EF4444';
+        const icon = ch.tabs[i].icon ? `<i class="fa-solid ${ch.tabs[i].icon} text-[8px] mr-1"></i>` : '';
+        return `<div class="flex items-center justify-between text-xs"><span class="text-dark-text">${icon}${ch.tabs[i].label}</span><span class="font-medium" style="color:${c}">${s}%</span></div>`;
       }).join('');
 
-      const walls = placedElements.filter(e => e.userData?.type === 'wall').length;
-      const doors = placedElements.filter(e => e.userData?.type === 'door').length;
-      const roofs = placedElements.filter(e => e.userData?.type === 'roof').length;
-      document.getElementById('ch-elements-summary').innerHTML = `
-        <div class="flex items-center gap-1.5"><i class="fa-solid fa-vector-square text-accent"></i><span class="text-dark-heading">${walls}</span> walls</div>
-        <div class="flex items-center gap-1.5"><i class="fa-solid fa-door-open text-accent"></i><span class="text-dark-heading">${doors}</span> door${doors !== 1 ? 's' : ''}</div>
-        <div class="flex items-center gap-1.5"><i class="fa-solid fa-house-chimney text-accent"></i><span class="text-dark-heading">${roofs}</span> roof${roofs !== 1 ? 's' : ''}</div>`;
+      const counts = {};
+      placedElements.forEach(e => { const t = e.userData?.type || 'element'; counts[t] = (counts[t]||0)+1; });
+      const icons = { wall:'fa-vector-square', door:'fa-door-open', roof:'fa-house-chimney', window:'fa-window-maximize' };
+      document.getElementById('ch-elements-summary').innerHTML = Object.entries(counts).map(([t,n]) =>
+        `<div class="flex items-center gap-1.5"><i class="fa-solid ${icons[t]||'fa-cube'} text-accent"></i><span class="text-dark-heading">${n}</span> ${t}${n>1?'s':''}</div>`
+      ).join('');
+
+      // Next chapter button
+      const btn = document.getElementById('ch-complete-btn');
+      if (currentChapter === 1 && !chapterState[2].completed.every(Boolean)) {
+        btn.innerHTML = 'Start Chapter 2 <i class="fa-solid fa-arrow-right ml-1"></i>';
+        btn.onclick = () => { hideChapterComplete(); startChapter(2); };
+        btn.style.background = '#F5620F';
+      } else {
+        btn.innerHTML = 'Return to Room <i class="fa-solid fa-arrow-right ml-1"></i>';
+        btn.onclick = hideChapterComplete;
+        btn.style.background = '#34D399';
+      }
 
       setupChapterPreview();
       document.getElementById('chapter-complete').classList.add('visible');
@@ -1317,8 +972,7 @@
 
     function hideChapterComplete() {
       document.getElementById('chapter-complete').classList.remove('visible');
-      if (chapterPreviewAnim) cancelAnimationFrame(chapterPreviewAnim);
-      chapterPreviewAnim = null;
+      if (chapterPreviewAnim) cancelAnimationFrame(chapterPreviewAnim); chapterPreviewAnim = null;
     }
 
     function setupChapterPreview() {
@@ -1327,46 +981,45 @@
       chapterPreviewRenderer.setSize(pc.width, pc.height);
       chapterPreviewScene = new THREE.Scene();
       chapterPreviewScene.add(new THREE.AmbientLight(0xffffff, 0.5));
-      const dl = new THREE.DirectionalLight(0xffffff, 0.7); dl.position.set(5, 8, 4); dl.castShadow = true; chapterPreviewScene.add(dl);
+      const dl = new THREE.DirectionalLight(0xffffff, 0.7); dl.position.set(5,8,4); dl.castShadow = true; chapterPreviewScene.add(dl);
       chapterPreviewScene.add(new THREE.HemisphereLight(0xB1C4E0, 0x283040, 0.4));
-      const gnd = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.MeshStandardMaterial({ color: 0x0E1018, roughness: 0.95 }));
-      gnd.rotation.x = -Math.PI / 2; gnd.receiveShadow = true; chapterPreviewScene.add(gnd);
+      const gnd = new THREE.Mesh(new THREE.PlaneGeometry(8,8), new THREE.MeshStandardMaterial({ color: 0x0E1018, roughness: 0.95 }));
+      gnd.rotation.x = -Math.PI/2; gnd.receiveShadow = true; chapterPreviewScene.add(gnd);
       chapterPreviewScene.add(new THREE.GridHelper(8, 26, 0x222636, 0x181C28));
       for (const el of placedElements) chapterPreviewScene.add(el.clone());
-      chapterPreviewCamera = new THREE.PerspectiveCamera(45, pc.width / pc.height, 0.1, 50);
+      chapterPreviewCamera = new THREE.PerspectiveCamera(45, pc.width/pc.height, 0.1, 50);
       let angle = 0;
-      function anim() {
-        chapterPreviewAnim = requestAnimationFrame(anim);
-        angle += 0.005;
-        chapterPreviewCamera.position.set(1.5 + 7 * Math.cos(angle), 4, 1.5 + 7 * Math.sin(angle));
-        chapterPreviewCamera.lookAt(1.5, 1, 1.5);
-        chapterPreviewRenderer.render(chapterPreviewScene, chapterPreviewCamera);
-      }
+      function anim() { chapterPreviewAnim = requestAnimationFrame(anim); angle += 0.005; chapterPreviewCamera.position.set(1.5+7*Math.cos(angle), 4, 1.5+7*Math.sin(angle)); chapterPreviewCamera.lookAt(1.5, 1, 1.5); chapterPreviewRenderer.render(chapterPreviewScene, chapterPreviewCamera); }
       anim();
     }
 
+    // ── Tab Bar Rendering ─────────────────────────────────────────
+    function renderTabs() {
+      const ch = CHAPTERS[currentChapter], st = cState();
+      const bar = document.getElementById('tab-bar');
+      bar.innerHTML = ch.tabs.map((tab, i) => {
+        const num = i + 1;
+        const isActive = currentLesson === num;
+        const isDone = st.completed[i];
+        const isLocked = num > 1 && !st.completed[i - 1];
+        let cls = 'lesson-tab flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium border border-transparent';
+        if (isActive) cls += ' active';
+        else if (isDone) cls += ' completed';
+        else if (isLocked) cls += ' locked text-dark-text';
+        else cls += ' text-dark-text';
+        const icon = tab.icon ? `<i class="fa-solid ${tab.icon} text-[8px]"></i>` : num;
+        return `<button class="${cls}" data-lesson="${num}" onclick="switchLesson(${num})">
+          <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border border-current">${icon}</span>
+          ${tab.label}
+        </button>`;
+      }).join('');
+    }
+
     // ── Lesson Navigation ─────────────────────────────────────────
-    const LESSON_OBJECTIVES = {
-      1: 'Place a wall along the X-axis from <strong class="text-dark-heading">(0, 0)</strong> to <strong class="text-dark-heading">(3000, 0)</strong>. Two clicks: start point, then end point.',
-      2: 'Place a wall along the Z-axis from <strong class="text-dark-heading">(0, 0)</strong> to <strong class="text-dark-heading">(0, 3000)</strong>. Match the target exactly for a high score.',
-      3: 'Place <strong class="text-dark-heading">2 walls</strong> to close the room. You need:<br>• <strong class="text-dark-heading">(3000, 0) → (3000, 3000)</strong><br>• <strong class="text-dark-heading">(0, 3000) → (3000, 3000)</strong><br>Place them in any order.',
-      4: '<strong class="text-dark-heading">Phase 1:</strong> Click to place a door on a wall.<br><strong class="text-dark-heading">Phase 2:</strong> Click 4 corners to sketch the roof boundary matching the room footprint.',
-      5: '<strong class="text-accent"><i class="fa-solid fa-star"></i> Final Challenge</strong><br>Build the complete room from scratch with <strong class="text-dark-heading">no guides</strong>.<br>Place 4 walls → door → roof.<br>Score 80%+ to complete Chapter 1.'
-    };
-
-    const LESSON_INSTRUCTIONS = {
-      1: 'Click to place the start point of your wall',
-      2: 'Click to place the start point of your wall',
-      3: 'Click to start placing the first closing wall (any order)',
-      4: 'Click on or near a wall to place a door',
-      5: 'Place wall 1 of 4 — click to set the start point'
-    };
-
     function switchLesson(num) {
-      if (num > 1 && !lessonsCompleted[num - 2]) return;
-      hideResults();
-      currentLesson = num;
-
+      const st = cState();
+      if (num > 1 && !st.completed[num - 2]) return;
+      hideResults(); currentLesson = num;
       wallStartPoint = null;
       if (wallPreviewMesh) { scene.remove(wallPreviewMesh); wallPreviewMesh = null; }
       document.getElementById('prop-length').style.display = 'none';
@@ -1376,65 +1029,96 @@
       document.getElementById('reference-section').style.display = 'none';
       hideMeasureBar();
 
-      if (num === 3) {
-        l3WallsPlaced = 0; l3Walls = [];
-        document.getElementById('prop-l3-count').style.display = '';
-        document.getElementById('l3-wall-count').textContent = `0 / ${L3_REQUIRED_WALLS}`;
-      }
-      if (num === 4) {
-        doorPlacedInL4 = false; l4Phase = 'door';
-        roofSketchPoints = []; roofSketchLines.forEach(obj => scene.remove(obj)); roofSketchLines = []; clearRoofGuides();
-        document.getElementById('prop-l4-phase').style.display = '';
-        document.getElementById('l4-phase-label').textContent = 'Place Door';
-      }
-      if (num === 5) {
-        // Clear the entire scene for a fresh start
-        l5Elements.forEach(el => { scene.remove(el); const idx = placedElements.indexOf(el); if (idx >= 0) placedElements.splice(idx, 1); });
-        // Also clear any elements from previous lessons still in scene
-        [...placedElements].forEach(el => { scene.remove(el); });
-        placedElements = [];
-
-        l5Phase = 'walls'; l5WallsPlaced = 0; l5Walls = []; l5Elements = [];
-        roofSketchPoints = []; roofSketchLines.forEach(obj => scene.remove(obj)); roofSketchLines = []; clearRoofGuides();
-        document.getElementById('prop-l5-progress').style.display = '';
-        document.getElementById('l5-progress-label').textContent = `Walls: 0/${L5_REQUIRED_WALLS}`;
-        document.getElementById('reference-section').style.display = '';
-        updateElementsList();
+      if (currentChapter === 1) {
+        if (num === 3) { l3WallsPlaced = 0; l3Walls = []; document.getElementById('prop-l3-count').style.display = ''; document.getElementById('l3-wall-count').textContent = `0 / ${L3_REQUIRED_WALLS}`; }
+        if (num === 4) { doorPlacedInL4 = false; l4Phase = 'door'; roofSketchPoints = []; roofSketchLines.forEach(o => scene.remove(o)); roofSketchLines = []; clearRoofGuides(); document.getElementById('prop-l4-phase').style.display = ''; document.getElementById('l4-phase-label').textContent = 'Place Door'; }
+        if (num === 5) {
+          l5Elements.forEach(el => { scene.remove(el); const idx = placedElements.indexOf(el); if (idx >= 0) placedElements.splice(idx, 1); });
+          [...placedElements].forEach(el => scene.remove(el)); placedElements = [];
+          l5Phase = 'walls'; l5WallsPlaced = 0; l5Walls = []; l5Elements = [];
+          roofSketchPoints = []; roofSketchLines.forEach(o => scene.remove(o)); roofSketchLines = []; clearRoofGuides();
+          document.getElementById('prop-l5-progress').style.display = '';
+          document.getElementById('l5-progress-label').textContent = `Walls: 0/${L5_REQUIRED_WALLS}`;
+          document.getElementById('reference-section').style.display = '';
+          document.getElementById('reference-svg').innerHTML = '<rect x="0" y="0" width="200" height="200" fill="#0B0D11"/><line x1="30" y1="30" x2="30" y2="170" stroke="#181C28" stroke-width="0.5"/><line x1="100" y1="30" x2="100" y2="170" stroke="#181C28" stroke-width="0.5"/><line x1="170" y1="30" x2="170" y2="170" stroke="#181C28" stroke-width="0.5"/><line x1="30" y1="30" x2="170" y2="30" stroke="#181C28" stroke-width="0.5"/><line x1="30" y1="100" x2="170" y2="100" stroke="#181C28" stroke-width="0.5"/><line x1="30" y1="170" x2="170" y2="170" stroke="#181C28" stroke-width="0.5"/><rect x="28" y="168" width="144" height="4" rx="1" fill="#CCCCCC"/><rect x="28" y="28" width="4" height="144" rx="1" fill="#CCCCCC"/><rect x="168" y="28" width="4" height="144" rx="1" fill="#CCCCCC"/><rect x="28" y="28" width="144" height="4" rx="1" fill="#CCCCCC"/><rect x="85" y="168" width="30" height="4" rx="1" fill="#A0896C"/><rect x="32" y="32" width="136" height="136" rx="2" fill="#5A6577" opacity="0.15"/><text x="100" y="190" text-anchor="middle" fill="#A0A4B8" font-size="9" font-family="sans-serif">3000 mm</text><text x="100" y="15" text-anchor="middle" fill="#F5620F" font-size="8" font-family="sans-serif" font-weight="600">Target Room</text>';
+          updateElementsList();
+        }
       }
 
-      document.querySelectorAll('.lesson-tab').forEach(tab => {
-        const lessonNum = parseInt(tab.dataset.lesson);
-        tab.classList.remove('active', 'completed');
-        tab.classList.add('text-dark-text');
-        if (lessonNum === num) { tab.classList.add('active'); tab.classList.remove('text-dark-text'); }
-        else if (lessonsCompleted[lessonNum - 1]) { tab.classList.add('completed'); tab.classList.remove('text-dark-text'); }
-      });
-
-      document.getElementById('lesson-objective').innerHTML = LESSON_OBJECTIVES[num];
-      updateInstruction(LESSON_INSTRUCTIONS[num]);
+      renderTabs();
+      const ch = CHAPTERS[currentChapter];
+      document.getElementById('lesson-objective').innerHTML = ch.objectives[num];
+      updateInstruction(ch.instructions[num]);
       setStatus('Ready');
     }
 
     function continueToNextLesson() {
-      if (currentLesson < TOTAL_LESSONS) switchLesson(currentLesson + 1);
+      if (currentLesson < totalLessons()) switchLesson(currentLesson + 1);
     }
 
-    // ── Progress ──────────────────────────────────────────────────
     function updateProgress() {
-      const completed = lessonsCompleted.filter(Boolean).length;
-      document.getElementById('progress-label').textContent = `${completed} / ${TOTAL_LESSONS} Lessons`;
-      document.getElementById('progress-bar').style.width = `${(completed / TOTAL_LESSONS) * 100}%`;
+      const st = cState(), tl = totalLessons();
+      const done = st.completed.filter(Boolean).length;
+      document.getElementById('progress-label').textContent = `${done} / ${tl} Lessons`;
+      document.getElementById('progress-bar').style.width = `${(done / tl) * 100}%`;
+    }
+
+    // ── Chapter Start ─────────────────────────────────────────────
+    function startChapter(num) {
+      currentChapter = num;
+      document.getElementById('landing-page').style.display = 'none';
+      document.getElementById('app-shell').classList.remove('hidden');
+      document.getElementById('app-shell').classList.add('flex');
+      document.getElementById('chapter-title').textContent = CHAPTERS[num].title;
+      resize();
+
+      if (num === 2) {
+        // Pre-build the Chapter 1 room
+        [...placedElements].forEach(el => scene.remove(el)); placedElements = [];
+        const roomWalls = [[0,0,3,0],[0,0,0,3],[3,0,3,3],[0,3,3,3]];
+        roomWalls.forEach(([sx,sz,ex,ez]) => {
+          const w = createWallMesh(new THREE.Vector3(sx,0,sz), new THREE.Vector3(ex,0,ez));
+          scene.add(w); placedElements.push(w);
+        });
+        const doorPos = new THREE.Vector3(1.5, 0, 0);
+        const door = createDoorMesh(doorPos, 0);
+        scene.add(door); placedElements.push(door);
+        const roofPts = [new THREE.Vector3(0,0,0), new THREE.Vector3(3,0,0), new THREE.Vector3(3,0,3), new THREE.Vector3(0,0,3)];
+        const roof = createRoofMesh(roofPts);
+        scene.add(roof); placedElements.push(roof);
+      }
+
+      switchLesson(1);
+      updateProgress();
+    }
+
+    function goToLanding() {
+      document.getElementById('app-shell').classList.add('hidden');
+      document.getElementById('app-shell').classList.remove('flex');
+      document.getElementById('landing-page').style.display = '';
+      updateLandingPage();
+    }
+
+    function updateLandingPage() {
+      const ch1Done = chapterState[1].completed.every(Boolean);
+      if (ch1Done) {
+        document.getElementById('ch1-status').innerHTML = '<span style="color: #34D399;"><i class="fa-solid fa-check mr-1"></i> Complete</span>';
+        document.getElementById('ch2-card').style.opacity = '1';
+        document.getElementById('ch2-card').style.cursor = 'pointer';
+        document.getElementById('ch2-card').onclick = () => startChapter(2);
+        document.getElementById('ch2-status').innerHTML = '<span style="color: #F5620F;">Start <i class="fa-solid fa-arrow-right"></i></span>';
+      }
     }
 
     // ── Elements List ─────────────────────────────────────────────
     function updateElementsList() {
       const el = document.getElementById('elements-list');
-      if (placedElements.length === 0) { el.innerHTML = '<p class="text-xs text-dark-text italic">No elements placed yet</p>'; return; }
+      if (!placedElements.length) { el.innerHTML = '<p class="text-xs text-dark-text italic">No elements placed yet</p>'; return; }
+      const icons = { wall:'fa-vector-square', door:'fa-door-open', roof:'fa-house-chimney', window:'fa-window-maximize' };
       el.innerHTML = placedElements.map(obj => {
-        const type = obj.userData?.type || 'element';
-        const icons = { wall: 'fa-vector-square', door: 'fa-door-open', roof: 'fa-house-chimney' };
-        let detail = type === 'wall' ? `${obj.userData.lengthMM} mm` : '';
-        return `<div class="flex items-center gap-2 py-1 px-2 rounded text-xs hover:bg-white/[0.03]"><i class="fa-solid ${icons[type] || 'fa-cube'} text-accent w-4 text-center"></i><span class="text-dark-heading capitalize">${type}</span><span class="text-dark-text ml-auto">${detail}</span></div>`;
+        const t = obj.userData?.type || 'element';
+        let detail = t === 'wall' ? `${obj.userData.lengthMM} mm` : '';
+        return `<div class="flex items-center gap-2 py-1 px-2 rounded text-xs hover:bg-white/[0.03]"><i class="fa-solid ${icons[t]||'fa-cube'} text-accent w-4 text-center"></i><span class="text-dark-heading capitalize">${t}</span><span class="text-dark-text ml-auto">${detail}</span></div>`;
       }).join('');
     }
 
@@ -1442,66 +1126,47 @@
     function clearCurrentPlacement() {
       wallStartPoint = null;
       if (wallPreviewMesh) { scene.remove(wallPreviewMesh); wallPreviewMesh = null; }
-      document.getElementById('prop-length').style.display = 'none';
-      hideMeasureBar();
-
-      if (currentLesson === 3) {
-        l3Walls.forEach(w => { scene.remove(w); const idx = placedElements.indexOf(w); if (idx >= 0) placedElements.splice(idx, 1); });
-        l3Walls = []; l3WallsPlaced = 0;
-        document.getElementById('l3-wall-count').textContent = `0 / ${L3_REQUIRED_WALLS}`;
-        updateElementsList();
+      document.getElementById('prop-length').style.display = 'none'; hideMeasureBar();
+      if (currentChapter === 1 && currentLesson === 3) {
+        l3Walls.forEach(w => { scene.remove(w); const i=placedElements.indexOf(w); if(i>=0) placedElements.splice(i,1); });
+        l3Walls=[]; l3WallsPlaced=0; document.getElementById('l3-wall-count').textContent = `0/${L3_REQUIRED_WALLS}`; updateElementsList();
       }
-      if (currentLesson === 4) {
-        const toRemove = placedElements.filter(el => (el.userData?.type === 'door' && doorPlacedInL4) || el.userData?.type === 'roof');
-        toRemove.forEach(el => { scene.remove(el); const idx = placedElements.indexOf(el); if (idx >= 0) placedElements.splice(idx, 1); });
-        doorPlacedInL4 = false; l4Phase = 'door';
-        roofSketchPoints = []; roofSketchLines.forEach(obj => scene.remove(obj)); roofSketchLines = []; clearRoofGuides();
-        document.getElementById('l4-phase-label').textContent = 'Place Door';
-        updateElementsList();
+      if (currentChapter === 1 && currentLesson === 4) {
+        placedElements.filter(el=>(el.userData?.type==='door'&&doorPlacedInL4)||el.userData?.type==='roof').forEach(el=>{scene.remove(el);const i=placedElements.indexOf(el);if(i>=0)placedElements.splice(i,1);});
+        doorPlacedInL4=false; l4Phase='door'; roofSketchPoints=[]; roofSketchLines.forEach(o=>scene.remove(o)); roofSketchLines=[]; clearRoofGuides();
+        document.getElementById('l4-phase-label').textContent='Place Door'; updateElementsList();
       }
-      if (currentLesson === 5) {
-        l5Elements.forEach(el => { scene.remove(el); const idx = placedElements.indexOf(el); if (idx >= 0) placedElements.splice(idx, 1); });
-        l5Phase = 'walls'; l5WallsPlaced = 0; l5Walls = []; l5Elements = [];
-        roofSketchPoints = []; roofSketchLines.forEach(obj => scene.remove(obj)); roofSketchLines = []; clearRoofGuides();
-        document.getElementById('l5-progress-label').textContent = `Walls: 0/${L5_REQUIRED_WALLS}`;
-        updateElementsList();
+      if (currentChapter === 1 && currentLesson === 5) {
+        l5Elements.forEach(el=>{scene.remove(el);const i=placedElements.indexOf(el);if(i>=0)placedElements.splice(i,1);});
+        l5Phase='walls'; l5WallsPlaced=0; l5Walls=[]; l5Elements=[];
+        roofSketchPoints=[]; roofSketchLines.forEach(o=>scene.remove(o)); roofSketchLines=[]; clearRoofGuides();
+        document.getElementById('l5-progress-label').textContent=`Walls: 0/${L5_REQUIRED_WALLS}`; updateElementsList();
       }
-      updateInstruction(LESSON_INSTRUCTIONS[currentLesson]);
+      if (currentChapter === 2) {
+        // Remove last placed window
+        const wins = placedElements.filter(el => el.userData?.type === 'window');
+        if (wins.length) { const last = wins[wins.length-1]; scene.remove(last); placedElements.splice(placedElements.indexOf(last), 1); updateElementsList(); }
+      }
+      updateInstruction(CHAPTERS[currentChapter].instructions[currentLesson]);
       setStatus('Ready');
     }
 
     // ── View Controls ─────────────────────────────────────────────
-    function setView(view) {
-      document.querySelectorAll('.view-btn[data-view]').forEach(b => { b.classList.remove('active'); b.style.color = '#A0A4B8'; });
-      const btn = document.querySelector(`.view-btn[data-view="${view}"]`);
-      if (btn) { btn.classList.add('active'); btn.style.color = ''; }
-      switch (view) {
-        case '3d': spherical = { theta: Math.PI/4, phi: Math.PI/4, radius: 10 }; break;
-        case 'top': spherical = { theta: 0, phi: 0.01, radius: 12 }; break;
-        case 'front': spherical = { theta: 0, phi: Math.PI/2, radius: 10 }; break;
-      }
+    function setView(v) {
+      document.querySelectorAll('.view-btn[data-view]').forEach(b=>{b.classList.remove('active');b.style.color='#A0A4B8';});
+      const b=document.querySelector(`.view-btn[data-view="${v}"]`); if(b){b.classList.add('active');b.style.color='';}
+      switch(v){case'3d':spherical={theta:Math.PI/4,phi:Math.PI/4,radius:10};break;case'top':spherical={theta:0,phi:0.01,radius:12};break;case'front':spherical={theta:0,phi:Math.PI/2,radius:10};break;}
       updateCameraFromSpherical();
     }
+    function resetView() { ORBIT_TARGET.set(0,0,0); setView('3d'); }
+    function updateInstruction(t) { document.getElementById('instruction-text').textContent = t; }
+    function setStatus(t) { document.getElementById('status-mode').textContent = t; }
 
-    function resetView() { ORBIT_TARGET.set(0, 0, 0); setView('3d'); }
-
-    function updateInstruction(text) { document.getElementById('instruction-text').textContent = text; }
-    function setStatus(text) { document.getElementById('status-mode').textContent = text; }
-
-    // ── Landing Page ──────────────────────────────────────────────
-    document.getElementById('btn-start').addEventListener('click', () => {
-      document.getElementById('landing-page').style.display = 'none';
-      document.getElementById('app-shell').classList.remove('hidden');
-      document.getElementById('app-shell').classList.add('flex');
-      resize();
-      switchLesson(1);
-    });
-
-    // ── Render Loop ───────────────────────────────────────────────
-    function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
+    // ── Init ──────────────────────────────────────────────────────
+    document.getElementById('btn-start')?.remove();
     sphericalFromCamera();
+    function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
     animate();
   </script>
-
 </body>
 </html>
