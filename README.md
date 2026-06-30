@@ -6,6 +6,11 @@ Interactive Revit/BIM training platform — Duolingo-style lessons for construct
 ![Three.js](https://img.shields.io/badge/Three.js-000000?style=flat&logo=threedotjs&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white)
 ![No build step](https://img.shields.io/badge/build_step-none-34D399?style=flat)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)
+
+**[Try it live →](https://bimforgedotnet.github.io/BIMforge/)**
+
+![Chapter 1 room — walls, door and roof rendered in the 3D viewport](docs/screenshots/chapter1-3d-view.png)
 
 ## What is this?
 
@@ -65,4 +70,4 @@ See [CLAUDE.md](CLAUDE.md) for architecture notes, [CURRICULUM.md](CURRICULUM.md
 
 ## License
 
-MIT
+[MIT](LICENSE)
