@@ -61,7 +61,7 @@ Open `index.html` in any modern browser. No build step, no dependencies to insta
 - **Font Awesome 6.5** — icons
 - **Space Grotesk + Inter** — typography
 
-See [CLAUDE.md](CLAUDE.md) for architecture notes and [CURRICULUM.md](CURRICULUM.md) for the full lesson curriculum.
+See [CLAUDE.md](CLAUDE.md) for architecture notes, [CURRICULUM.md](CURRICULUM.md) for the full lesson curriculum, and [CHANGELOG.md](CHANGELOG.md) for a log of bug fixes and behavioural changes.
 
 ## License
 
