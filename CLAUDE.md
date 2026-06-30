@@ -32,12 +32,20 @@ All coordinates are in **metres** internally; displayed as **millimetres** in th
 ```js
 currentChapter          // 1 or 2
 currentLesson           // 1–N within chapter
-chapterState[ch]        // { completed: bool[], scores: number[] }
+chapterState[ch]        // { completed: bool[5], scores: number[5] } — both chapters have 5 lessons
 placedElements[]        // Three.js meshes with userData.type
+lessonLocked            // true once a single-shot lesson (Ch1 L1/L2, Ch2 L1–4) has been scored;
+                         // blocks further placement until clearCurrentPlacement() resets it
 ```
 
-Lesson phases (L4 + L5): `'door'` → `'roof'` → `'done'`
-Lesson 5 phase: `'walls'` → `'door'` → `'roof'` → `'done'`
+Lesson phases (Ch1 L4 + L5, Ch2 L5): `'door'` → `'roof'` → `'done'`
+Ch1 L5 phase: `'walls'` → `'door'` → `'roof'` → `'done'`
+Ch2 L5 phase (`ch2L5Phase`): `'walls'` → `'door'` → `'roof'` → `'window1'` → `'window2'` → `'done'`
+
+Progress (`chapterState`, `currentChapter`, `currentLesson`) persists to `localStorage` under key
+`bimforge_progress`. `loadProgress()` validates that saved `completed`/`scores` array lengths match
+the current `CHAPTERS[n].totalLessons` before trusting them — mismatched saves (e.g. from a prior
+lesson-count change) are discarded rather than silently desyncing lesson locks.
 
 ## Content structure
 
@@ -48,10 +56,13 @@ Lesson 5 phase: `'walls'` → `'door'` → `'roof'` → `'done'`
 4. Door & Roof — wall-hosted door + 4-click roof sketch
 5. Final Challenge — full room from scratch, no guides, 80% to pass
 
-### Chapter 2 — Windows & Openings (2 lessons)
+### Chapter 2 — Windows & Openings (5 lessons)
 - Pre-builds the Ch1 room on start (4 walls + door + roof)
-1. Place first window — on bottom wall
-2. Place window at offset — on right wall, near corner
+1. Place first window — on bottom wall (familiarisation)
+2. Window at offset — right wall, 600 mm from corner
+3. Precise position — top wall, 900 mm from left corner, no floor plan
+4. Match floor plan — left wall, 1500 mm from corner, reference SVG provided
+5. Assessment — full room from scratch (4 walls, door, roof) + 2 windows, 80% to pass
 
 ## Scoring system
 
@@ -66,9 +77,9 @@ Each lesson scores 0–100%. Weights vary by lesson:
 
 ## Raycasting modes
 
-- **Wall drawing** (Ch1 L1–L3, L5 walls phase): raycast against ground plane → snap to grid → snap to existing endpoints
-- **Wall-hosted placement** (door + Ch2 windows): raycast against wall meshes → project hit point along wall → show ghost outline preview
-- **Roof** (L4 + L5 roof phase): raycast walls first, fall back to ground; snaps to wall top corners at `WALL_HEIGHT`
+- **Wall drawing** (Ch1 L1–L3, Ch1/Ch2 L5 walls phase): raycast against ground plane → snap to grid → snap to existing endpoints
+- **Wall-hosted placement** (doors + windows): raycast against wall meshes → project hit point along wall → show ghost outline preview. Active for Ch1 L4/L5 door phase, Ch2 L1–4, and Ch2 L5 door/window1/window2 phases
+- **Roof** (Ch1 L4/L5 roof phase, Ch2 L5 roof phase): raycast walls first, fall back to ground; snaps to wall top corners at `WALL_HEIGHT`
 
 ## Camera controls
 

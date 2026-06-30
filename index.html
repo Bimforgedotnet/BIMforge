@@ -84,18 +84,21 @@
       </div>
 
       <!-- Chapter 2 Card -->
-      <div class="rounded-xl p-5 mb-6 transition-all" id="ch2-card" style="background: #13161D; border: 1px solid #222636; opacity: 0.4;">
+      <div class="rounded-xl p-5 mb-3 transition-all" id="ch2-card" style="background: #13161D; border: 1px solid #222636; opacity: 0.4;">
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(245, 98, 15, 0.12);">
             <span class="text-accent font-display font-bold text-sm">2</span>
           </div>
           <div class="text-left flex-1">
             <h3 class="font-display font-semibold text-dark-heading text-sm">Chapter 2 — Windows & Openings</h3>
-            <p class="text-xs text-dark-text">2 Lessons · Place windows on walls</p>
+            <p class="text-xs text-dark-text">5 Lessons · Place windows precisely</p>
           </div>
           <span class="text-xs text-dark-text" id="ch2-status"><i class="fa-solid fa-lock mr-1"></i> Complete Ch.1</span>
         </div>
       </div>
+      <button onclick="resetProgress()" class="text-xs text-dark-text hover:text-dark-heading transition-all mt-3" style="opacity: 0.45;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='0.45'">
+        <i class="fa-solid fa-rotate-left mr-1"></i> Reset Progress
+      </button>
     </div>
   </div>
 
@@ -243,6 +246,19 @@
             <div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs" id="prop-l5-progress" style="display: none;"><span class="text-dark-text">Challenge</span><span class="text-dark-heading font-medium" id="l5-progress-label">Walls: 0/4</span></div>
           </div>
         </div>
+        <div class="sidebar-section p-4" id="selection-panel" style="display: none;">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-mouse-pointer text-accent text-xs"></i>
+              <h3 class="font-display font-semibold text-dark-heading text-xs uppercase tracking-wider">Selection</h3>
+            </div>
+            <button onclick="deselectElement()" class="text-dark-text hover:text-dark-heading text-xs"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="space-y-0 mb-3" id="selection-props"></div>
+          <button onclick="deleteSelectedElement()" class="w-full py-1.5 rounded-lg text-xs font-medium border transition-all hover:bg-red-500/10" style="border-color: #EF4444; color: #EF4444;">
+            <i class="fa-solid fa-trash mr-1.5"></i> Delete Element
+          </button>
+        </div>
         <div class="sidebar-section p-4">
           <div class="flex items-center gap-2 mb-3">
             <i class="fa-solid fa-layer-group text-accent text-xs"></i>
@@ -317,18 +333,27 @@
       },
       2: {
         title: 'Chapter 2 — Windows & Openings',
-        totalLessons: 2,
+        totalLessons: 5,
         tabs: [
           { label: 'Place First Window' },
-          { label: 'Place Window at Offset' }
+          { label: 'Window at Offset' },
+          { label: 'Precise Position' },
+          { label: 'Match Floor Plan' },
+          { label: 'Assessment', icon: 'fa-star' }
         ],
         objectives: {
-          1: 'Hover over a wall to highlight it, then <strong class="text-dark-heading">click to place a window</strong>. The window will snap to the wall face automatically at <strong class="text-dark-heading">900 mm sill height</strong>.',
-          2: 'Place a window on a <strong class="text-dark-heading">different wall</strong> this time. Try to position it <strong class="text-dark-heading">near the corner</strong> of the wall. Watch the ghost preview as you move your cursor.'
+          1: 'Hover over any wall to highlight it, then <strong class="text-dark-heading">click to place a window</strong>. The window snaps to the wall face at <strong class="text-dark-heading">900 mm sill height</strong>. This is pure familiarisation.',
+          2: 'Place a window on the <strong class="text-dark-heading">right wall</strong>, positioned <strong class="text-dark-heading">600 mm from the corner</strong>. Watch the cursor coordinates in the sidebar.',
+          3: 'Place a window on the <strong class="text-dark-heading">top wall</strong>, exactly <strong class="text-dark-heading">900 mm from the left corner</strong>. Use the cursor position display to guide your click — no floor plan this time.',
+          4: 'Look at the floor plan in the Reference panel. The door on the bottom wall is already placed — <strong class="text-accent">ignore it</strong>. Your job is to place a window on the <strong class="text-dark-heading">Left Wall</strong> (the green-highlighted wall on the left side), centred at <strong class="text-dark-heading">1500 mm</strong> from the corner.',
+          5: '<strong class="text-accent"><i class="fa-solid fa-star"></i> Assessment</strong><br>Build the complete room from scratch — 4 walls, door, roof — then place <strong class="text-dark-heading">2 windows</strong>: one centred on the bottom wall, one 600 mm from the corner on the right wall. Score 80%+ to pass.'
         },
         instructions: {
           1: 'Hover over a wall — it highlights orange. Click to place the window',
-          2: 'Hover over a different wall and click to place the window near a corner'
+          2: 'Hover over the right wall and click 600 mm from the corner',
+          3: 'Hover over the top wall and click 900 mm from the left corner',
+          4: 'Click the green Left Wall (not the bottom wall) — place the window at the midpoint',
+          5: 'Place wall 1 of 4 — click to set the start point'
         }
       }
     };
@@ -338,7 +363,7 @@
     let currentLesson = 1;
     let chapterState = {
       1: { completed: new Array(5).fill(false), scores: new Array(5).fill(0) },
-      2: { completed: new Array(2).fill(false), scores: new Array(2).fill(0) }
+      2: { completed: new Array(5).fill(false), scores: new Array(5).fill(0) }
     };
     let placedElements = [];
 
@@ -349,11 +374,33 @@
     let doorPlacedInL4 = false;
     let l3WallsPlaced = 0;
     let l3Walls = [];
+    let l1l2Walls = [];
+    let lessonLocked = false;
     let l4Phase = 'door';
     let l5Phase = 'walls';
     let l5WallsPlaced = 0;
     let l5Walls = [];
     let l5Elements = [];
+
+    let ch2L5Phase = 'walls';
+    let ch2L5WallsPlaced = 0;
+    let ch2L5Walls = [];
+    let ch2L5Elements = [];
+    let ch2L5Windows = [];
+
+    // ── Selection (Ch3+) ──────────────────────────────────────────
+    let selectedElement = null;
+    let selectionHelper = null;
+
+    // ── Move / Resize state ───────────────────────────────────────
+    let resizeHandleMeshes = [];
+    let isDraggingElement = false;
+    let dragMoveTarget = null;
+    let dragResizeWall = null;
+    let dragResizeHandleIdx = -1;
+    let dragPrevGroundPt = null;
+    let dragDidMove = false;
+    let suppressNextClick = false;
 
     let isOrbiting = false;
     let isPanning = false;
@@ -363,6 +410,65 @@
     // Convenience accessors for current chapter state
     function cState() { return chapterState[currentChapter]; }
     function totalLessons() { return CHAPTERS[currentChapter].totalLessons; }
+
+    // ── localStorage Persistence ──────────────────────────────────
+    const SAVE_KEY = 'bimforge_progress';
+
+    function saveProgress() {
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify({
+          chapterState,
+          currentChapter,
+          currentLesson
+        }));
+      } catch(e) {}
+    }
+
+    function loadProgress() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return false;
+        const saved = JSON.parse(raw);
+        if (!saved.chapterState) return false;
+        // Reject saves whose shape doesn't match the current lesson structure
+        // (e.g. Chapter 2 grew from 2 to 5 lessons) — stale data would otherwise
+        // desync completion checks, lesson locking and the progress bar.
+        for (const chNum of Object.keys(CHAPTERS)) {
+          const expected = CHAPTERS[chNum].totalLessons;
+          const chSt = saved.chapterState[chNum];
+          if (!chSt || !Array.isArray(chSt.completed) || chSt.completed.length !== expected ||
+              !Array.isArray(chSt.scores) || chSt.scores.length !== expected) {
+            localStorage.removeItem(SAVE_KEY);
+            return false;
+          }
+        }
+        chapterState = saved.chapterState;
+        if (saved.currentChapter) currentChapter = saved.currentChapter;
+        if (saved.currentLesson) currentLesson = saved.currentLesson;
+        return true;
+      } catch(e) { return false; }
+    }
+
+    function resetProgress() {
+      if (!confirm('Reset all progress? This cannot be undone.')) return;
+      localStorage.removeItem(SAVE_KEY);
+      chapterState = {
+        1: { completed: new Array(5).fill(false), scores: new Array(5).fill(0) },
+        2: { completed: new Array(5).fill(false), scores: new Array(5).fill(0) }
+      };
+      currentChapter = 1;
+      currentLesson = 1;
+      // Return to landing page
+      document.getElementById('app-shell').classList.add('hidden');
+      document.getElementById('app-shell').classList.remove('flex');
+      document.getElementById('landing-page').style.display = '';
+      // Reset landing page to locked state
+      document.getElementById('ch1-status').innerHTML = '<span style="color: #F5620F;">Start <i class="fa-solid fa-arrow-right"></i></span>';
+      document.getElementById('ch2-card').style.opacity = '0.4';
+      document.getElementById('ch2-card').style.cursor = '';
+      document.getElementById('ch2-card').onclick = null;
+      document.getElementById('ch2-status').innerHTML = '<span class="text-xs text-dark-text"><i class="fa-solid fa-lock mr-1"></i> Complete Ch.1</span>';
+    }
 
     // ── Three.js Setup ────────────────────────────────────────────
     const canvas = document.getElementById('three-canvas');
@@ -427,16 +533,36 @@
       else if (e.button === 1 || (e.button === 0 && e.altKey)) isOrbiting = true;
       else if (e.button === 2) isOrbiting = true;
       prevMouse = { x: e.clientX, y: e.clientY };
+      if (e.button === 0 && !e.shiftKey && !e.altKey && currentChapter >= 3) initElementDrag(e);
     });
     canvas.addEventListener('mousemove', (e) => {
       const dx = e.clientX - prevMouse.x, dy = e.clientY - prevMouse.y;
       prevMouse = { x: e.clientX, y: e.clientY };
       if (isOrbiting) { spherical.theta -= dx * 0.005; spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi + dy * 0.005)); updateCameraFromSpherical(); }
       else if (isPanning) { const r = new THREE.Vector3(), u = new THREE.Vector3(); camera.getWorldDirection(u); r.crossVectors(u, camera.up).normalize(); u.crossVectors(r, u).normalize(); const ps = spherical.radius * 0.002; ORBIT_TARGET.add(r.multiplyScalar(-dx * ps)); ORBIT_TARGET.add(u.multiplyScalar(dy * ps)); updateCameraFromSpherical(); }
+      if (isDraggingElement) { handleElementDrag(e); return; }
       updateCursorPosition(e);
     });
-    canvas.addEventListener('mouseup', () => { isOrbiting = false; isPanning = false; });
-    canvas.addEventListener('mouseleave', () => { isOrbiting = false; isPanning = false; cursorIndicator.visible = false; });
+    canvas.addEventListener('mouseup', () => {
+      isOrbiting = false; isPanning = false;
+      if (isDraggingElement) {
+        if (dragDidMove) {
+          suppressNextClick = true;
+          updateSelectionPanel();
+          updateElementsList();
+          if (selectedElement?.userData?.type === 'wall') showResizeHandles(selectedElement);
+        }
+        isDraggingElement = false; dragMoveTarget = null; dragResizeWall = null;
+        dragResizeHandleIdx = -1; dragPrevGroundPt = null; dragDidMove = false;
+      }
+    });
+    canvas.addEventListener('mouseleave', () => {
+      isOrbiting = false; isPanning = false; cursorIndicator.visible = false;
+      if (isDraggingElement) {
+        isDraggingElement = false; dragMoveTarget = null; dragResizeWall = null;
+        dragResizeHandleIdx = -1; dragPrevGroundPt = null; dragDidMove = false;
+      }
+    });
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     canvas.addEventListener('wheel', (e) => { e.preventDefault(); spherical.radius = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, spherical.radius * (1 + e.deltaY * 0.003))); updateCameraFromSpherical(); }, { passive: false });
 
@@ -450,9 +576,11 @@
       return h.length > 0 ? new THREE.Vector3(snapToGrid(h[0].point.x), 0, snapToGrid(h[0].point.z)) : null;
     }
     function isRoofMode() {
-      if (currentChapter !== 1) return false;
-      if (currentLesson === 4 && l4Phase === 'roof') return true;
-      if (currentLesson === 5 && l5Phase === 'roof') return true;
+      if (currentChapter === 1) {
+        if (currentLesson === 4 && l4Phase === 'roof') return true;
+        if (currentLesson === 5 && l5Phase === 'roof') return true;
+      }
+      if (currentChapter === 2 && currentLesson === 5 && ch2L5Phase === 'roof') return true;
       return false;
     }
 
@@ -501,7 +629,7 @@
     }
     function nearEndpoint(point) {
       for (const w of placedElements.filter(el => el.userData?.type === 'wall'))
-        for (const ep of [w.userData.start, w.userData.end]) if (Math.sqrt((point.x-ep.x)**2+(point.z-ep.z)**2) < 0.4) return true;
+        for (const ep of [w.userData.start, w.userData.end]) if (Math.sqrt((point.x-ep.x)**2+(point.z-ep.z)**2) < SNAP_THRESHOLD) return true;
       return false;
     }
 
@@ -509,7 +637,11 @@
     let ghostPreviewMesh = null;
 
     function isWallHostMode() {
-      if (currentChapter === 2) return true;
+      if (currentChapter === 2) {
+        if (currentLesson <= 4) return true;
+        if (currentLesson === 5 && (ch2L5Phase === 'door' || ch2L5Phase === 'window1' || ch2L5Phase === 'window2')) return true;
+        return false;
+      }
       if (currentChapter === 1 && currentLesson === 4 && l4Phase === 'door') return true;
       if (currentChapter === 1 && currentLesson === 5 && l5Phase === 'door') return true;
       return false;
@@ -574,7 +706,7 @@
     function updateGhostPreview(hit) {
       if (!hit) { clearGhostPreview(); return; }
 
-      const isWindow = currentChapter === 2;
+      const isWindow = currentChapter === 2 && !(currentLesson === 5 && ch2L5Phase === 'door');
       const neededType = isWindow ? 'window' : 'door';
 
       // Rebuild ghost if type changed (door vs window)
@@ -638,19 +770,6 @@
     function hideMeasureBar() { document.getElementById('measure-bar').style.opacity = '0'; }
 
     // ── Door Creation ─────────────────────────────────────────────
-    function findNearestWall(clickPoint) {
-      const walls = placedElements.filter(el => el.userData?.type === 'wall');
-      let bw = null, bd = Infinity, bp = null, bt = 0;
-      for (const wall of walls) {
-        const a = wall.userData.start, b = wall.userData.end;
-        const dx = b.x-a.x, dz = b.z-a.z, ls = dx*dx+dz*dz;
-        if (ls < 0.001) continue;
-        let t = Math.max(0.15, Math.min(0.85, ((clickPoint.x-a.x)*dx+(clickPoint.z-a.z)*dz)/ls));
-        const px = a.x+t*dx, pz = a.z+t*dz, dist = Math.sqrt((clickPoint.x-px)**2+(clickPoint.z-pz)**2);
-        if (dist < bd) { bd = dist; bw = wall; bp = new THREE.Vector3(px, 0, pz); bt = t; }
-      }
-      return { wall: bw, point: bp, distance: bd, t: bt };
-    }
     function createDoorMesh(position, wallAngle) {
       const dw = 0.9, dh = 2.1, group = new THREE.Group();
       const frame = new THREE.Mesh(new THREE.BoxGeometry(dw+0.1, dh+0.05, WALL_THICKNESS+0.05), new THREE.MeshStandardMaterial({ color: 0x8B7355, roughness: 0.6 }));
@@ -749,7 +868,7 @@
     function showWallGuide(lessonNum) {
       clearWallGuides();
       const target = CH2_TARGETS[lessonNum];
-      if (!target) return;
+      if (!target || !target.wall) return;
 
       // Find the wall mesh matching the target
       const tw = target.wall;
@@ -799,6 +918,7 @@
 
     // ── Interaction Handler ───────────────────────────────────────
     canvas.addEventListener('click', (e) => {
+      if (suppressNextClick) { suppressNextClick = false; return; }
       if (isOrbiting || isPanning || e.shiftKey || e.altKey) return;
 
       // Wall-hosted placement uses wall raycasting
@@ -806,6 +926,7 @@
         const hit = raycastWalls(e);
         if (!hit) { updateInstruction('Hover over a wall and click to place'); return; }
         clearGhostPreview();
+        if (currentChapter === 2 && currentLesson === 5 && ch2L5Phase === 'door') { handleCh2L5Door(hit); return; }
         if (currentChapter === 2) { handleWindowPlacement(hit); return; }
         if (currentChapter === 1 && currentLesson === 4) { handleDoorFromWallHit(hit); return; }
         if (currentChapter === 1 && currentLesson === 5 && l5Phase === 'door') { handleDoorFromWallHit(hit); return; }
@@ -813,12 +934,19 @@
       }
 
       // Roof mode: raycast walls first so user can click wall tops
-      const isRoofMode = currentChapter === 1 && ((currentLesson === 4 && l4Phase === 'roof') || (currentLesson === 5 && l5Phase === 'roof'));
-      if (isRoofMode) {
+      const isRoofModeNow = (currentChapter === 1 && ((currentLesson === 4 && l4Phase === 'roof') || (currentLesson === 5 && l5Phase === 'roof')))
+                         || (currentChapter === 2 && currentLesson === 5 && ch2L5Phase === 'roof');
+      if (isRoofModeNow) {
         const wallHit = raycastWalls(e);
         const groundHit = getGroundPoint(e);
         const hitPoint = wallHit ? new THREE.Vector3(wallHit.hitPoint.x, 0, wallHit.hitPoint.z) : groundHit;
         if (hitPoint) handleRoofClick(hitPoint);
+        return;
+      }
+
+      // Ch3+ selection mode
+      if (currentChapter >= 3 && !wallStartPoint) {
+        handleSelectionClick(e);
         return;
       }
 
@@ -827,10 +955,13 @@
       if (currentChapter === 1) {
         if (currentLesson >= 1 && currentLesson <= 3) handleWallPlacement(p);
         else if (currentLesson === 5) handleLesson5(p);
+      } else if (currentChapter === 2 && currentLesson === 5 && ch2L5Phase === 'walls') {
+        handleCh2L5Walls(p);
       }
     });
 
     function handleWallPlacement(p) {
+      if (lessonLocked) { updateInstruction('Lesson already complete — use Clear Current Placement to retry'); return; }
       const sp = snapToEndpoint(p);
       if (!wallStartPoint) { wallStartPoint = sp.clone(); updateInstruction('Click to place the end point of your wall'); setStatus('Placing wall...'); }
       else {
@@ -846,9 +977,13 @@
             const le = Math.abs(wall.userData.lengthMM - bm.targetLenMM);
             if (le > 200) { wall.material.color.setHex(0xEF6B6B); setStatus(`Wall length off by ${le} mm`); }
             else if (le > 0) wall.material.color.setHex(0xE8C86A);
-            if (l3WallsPlaced >= L3_REQUIRED_WALLS) scoreAndComplete();
+            if (l3WallsPlaced >= L3_REQUIRED_WALLS) { lessonLocked = true; scoreAndComplete(); }
             else { updateInstruction(`Wall ${l3WallsPlaced} of ${L3_REQUIRED_WALLS} placed. Place the next wall`); setStatus(`${l3WallsPlaced}/${L3_REQUIRED_WALLS} walls`); }
-          } else scoreAndComplete();
+          } else {
+            l1l2Walls.push(wall);
+            lessonLocked = true;
+            scoreAndComplete();
+          }
         }
       }
     }
@@ -877,26 +1012,101 @@
 
     // ── Chapter 2: Window Placement ───────────────────────────────
     const CH2_TARGETS = {
-      1: { wallIdx: 0, wall: { a: [0,0], b: [3,0] }, targetPos: [1.5, 0], targetWallName: 'highlighted wall' },
-      2: { wallIdx: 2, wall: { a: [3,0], b: [3,3] }, targetPos: [3, 0.6], targetWallName: 'highlighted wall', offsetMM: 600 }
+      1: { wall: { a: [0,0], b: [3,0] }, targetPos: [1.5, 0] },
+      2: { wall: { a: [3,0], b: [3,3] }, targetPos: [3, 0.6] },
+      3: { wall: { a: [0,3], b: [3,3] }, targetPos: [0.9, 3] },
+      4: { wall: { a: [0,0], b: [0,3] }, targetPos: [0, 1.5] },
+      5: {
+        walls: [{ start:[0,0], end:[3,0] },{ start:[0,0], end:[0,3] },{ start:[3,0], end:[3,3] },{ start:[0,3], end:[3,3] }],
+        roofCorners: [[0,0],[3,0],[3,3],[0,3]], roofArea: 9.0,
+        wallSegments: [{ a:[0,0], b:[3,0] },{ a:[0,0], b:[0,3] },{ a:[3,0], b:[3,3] },{ a:[0,3], b:[3,3] }],
+        doorTarget: { wall: { a:[0,0], b:[3,0] }, position: [1.5, 0] },
+        windows: [
+          { wall: { a:[0,0], b:[3,0] }, targetPos: [1.5, 0] },
+          { wall: { a:[3,0], b:[3,3] }, targetPos: [3, 0.6] }
+        ]
+      }
     };
 
     function handleWindowPlacement(hit) {
+      if (currentChapter === 2 && currentLesson <= 4 && lessonLocked) {
+        updateInstruction('Lesson already complete — use Clear Current Placement to retry');
+        return;
+      }
       const win = createWindowMesh(hit.position, hit.wallAngle);
+      win.userData.hostWall = hit.wall;
       scene.add(win);
       placedElements.push(win);
-      updateElementsList();
-      // Only clear the guide if the window was placed on the correct wall
-      const target = CH2_TARGETS[currentLesson];
-      if (target) {
-        const r = scoreWindowPlacement(hit.position, target);
-        if (r.onCorrectWall) clearWallGuides();
+
+      if (currentChapter === 2 && currentLesson === 5) {
+        ch2L5Elements.push(win);
+        ch2L5Windows.push(win);
+        updateElementsList();
+        if (ch2L5Phase === 'window1') {
+          ch2L5Phase = 'window2';
+          document.getElementById('l5-progress-label').textContent = 'Place window 2';
+          updateInstruction('Window 1 placed. Place window 2 on the Right Wall, 600 mm from the corner');
+          setStatus('Place window 2');
+          updateWallLabelTarget('Right Wall');
+          removeTargetMarker();
+          showCh2TargetForLesson(2);
+        } else if (ch2L5Phase === 'window2') {
+          ch2L5Phase = 'done';
+          updateElementsList();
+          scoreAndComplete();
+        }
+        return;
       }
+
+      updateElementsList();
+      const target = CH2_TARGETS[currentLesson];
+      if (target && target.wall) {
+        const r = scoreWindowPlacement(hit.position, target);
+        if (r.onCorrectWall) { clearWallGuides(); removeTargetMarker(); }
+      }
+      lessonLocked = true;
       scoreAndComplete();
+    }
+
+    function handleCh2L5Door(hit) {
+      const door = createDoorMesh(hit.position, hit.wallAngle);
+      scene.add(door); placedElements.push(door); ch2L5Elements.push(door);
+      ch2L5Phase = 'roof';
+      updateElementsList();
+      document.getElementById('l5-progress-label').textContent = 'Sketch roof (0/4)';
+      updateInstruction('Door placed. Click the 4 top wall corners for the roof');
+      setStatus('Sketch roof'); showRoofGuides();
+    }
+
+    function handleCh2L5Walls(p) {
+      const sp = snapToEndpoint(p);
+      if (!wallStartPoint) {
+        wallStartPoint = sp.clone();
+        updateInstruction('Click to place the end point');
+        setStatus('Placing wall...');
+      } else {
+        if (wallPreviewMesh) { scene.remove(wallPreviewMesh); wallPreviewMesh = null; } hideMeasureBar();
+        const wall = createWallMesh(wallStartPoint, sp);
+        if (wall) {
+          scene.add(wall); placedElements.push(wall); ch2L5Elements.push(wall); ch2L5Walls.push(wall); ch2L5WallsPlaced++;
+          updateElementsList(); document.getElementById('prop-length').style.display = 'none'; wallStartPoint = null;
+          document.getElementById('l5-progress-label').textContent = `Walls: ${ch2L5WallsPlaced}/4`;
+          if (ch2L5WallsPlaced >= 4) {
+            ch2L5Phase = 'door';
+            document.getElementById('l5-progress-label').textContent = 'Place door';
+            updateInstruction('Walls done. Click on a wall to place the door');
+            setStatus('Place door');
+          } else {
+            updateInstruction(`Wall ${ch2L5WallsPlaced}/4. Place the next wall`);
+            setStatus(`${ch2L5WallsPlaced}/4 walls`);
+          }
+        }
+      }
     }
 
     function handleDoorFromWallHit(hit) {
       const door = createDoorMesh(hit.position, hit.wallAngle);
+      door.userData.hostWall = hit.wall;
       scene.add(door); placedElements.push(door);
       if (currentLesson === 4) {
         doorPlacedInL4 = true; l4Phase = 'roof';
@@ -920,22 +1130,37 @@
       if (roofSketchPoints.length > 1) addSketchLine(roofSketchPoints[roofSketchPoints.length-2], sp);
       if (currentChapter === 1 && currentLesson === 4) document.getElementById('l4-phase-label').textContent = `Sketch Roof (${roofSketchPoints.length}/4)`;
       if (currentChapter === 1 && currentLesson === 5) document.getElementById('l5-progress-label').textContent = `Sketch roof (${roofSketchPoints.length}/4)`;
+      if (currentChapter === 2 && currentLesson === 5) document.getElementById('l5-progress-label').textContent = `Sketch roof (${roofSketchPoints.length}/4)`;
       const rem = 4 - roofSketchPoints.length;
       if (rem > 0) { updateInstruction(`Corner ${roofSketchPoints.length} placed. ${rem} more`); setStatus(`Roof: ${roofSketchPoints.length}/4`); }
       if (roofSketchPoints.length >= 4) {
         addSketchLine(roofSketchPoints[3], roofSketchPoints[0]);
         const roof = createRoofMesh(roofSketchPoints);
-        if (roof) { scene.add(roof); placedElements.push(roof); if (currentLesson === 5) l5Elements.push(roof); updateElementsList(); }
+        if (roof) {
+          scene.add(roof); placedElements.push(roof);
+          if (currentChapter === 1 && currentLesson === 5) l5Elements.push(roof);
+          if (currentChapter === 2 && currentLesson === 5) ch2L5Elements.push(roof);
+          updateElementsList();
+        }
         roofSketchLines.forEach(o => scene.remove(o)); roofSketchLines = []; clearRoofGuides();
-        if (currentLesson === 4) document.getElementById('l4-phase-label').textContent = 'Complete';
-        if (currentLesson === 5) { l5Phase = 'done'; document.getElementById('l5-progress-label').textContent = 'Complete'; }
+        if (currentChapter === 1 && currentLesson === 4) document.getElementById('l4-phase-label').textContent = 'Complete';
+        if (currentChapter === 1 && currentLesson === 5) { l5Phase = 'done'; document.getElementById('l5-progress-label').textContent = 'Complete'; }
+        if (currentChapter === 2 && currentLesson === 5) {
+          ch2L5Phase = 'window1';
+          document.getElementById('l5-progress-label').textContent = 'Place window 1';
+          updateInstruction('Roof placed. Place window 1 on the Bottom Wall, centred');
+          setStatus('Place window 1');
+          updateWallLabelTarget('Bottom Wall');
+          showCh2TargetForLesson(1);
+          return;
+        }
         updateInstruction('Roof placed'); setStatus('Scoring...');
         scoreAndComplete();
       }
     }
 
     canvas.addEventListener('mousemove', (e) => {
-      if (wallStartPoint && (currentLesson <= 3 || (currentChapter === 1 && currentLesson === 5 && l5Phase === 'walls'))) {
+      if (wallStartPoint && (currentLesson <= 3 || (currentChapter === 1 && currentLesson === 5 && l5Phase === 'walls') || (currentChapter === 2 && currentLesson === 5 && ch2L5Phase === 'walls'))) {
         const p = getGroundPoint(e); if (p) createWallPreview(wallStartPoint, p);
       }
     });
@@ -1121,30 +1346,76 @@
         }
 
       } else if (currentChapter === 2) {
-        const target = CH2_TARGETS[currentLesson];
-        const lastWin = placedElements.filter(el => el.userData?.type === 'window').slice(-1)[0];
-        if (lastWin) {
-          const r = scoreWindowPlacement(lastWin.userData.position, target);
-          score = r.score;
-          if (!r.onCorrectWall) {
-            details.push({ label: 'Wall selection', value: '0%', sub: 'Wrong wall — place on the green highlighted wall', color: '#EF4444' });
-            tip = 'Look for the wall with green guide lines and place your window there.';
-          } else {
-            details.push({ label: 'Wall selection', value: '100%', sub: 'Correct wall', color: '#34D399' });
-            details.push({ label: 'Position accuracy', value: `${r.score}%`, sub: `${r.posDistMM} mm from target position`, color: r.score >= PASS_THRESHOLD ? '#34D399' : r.score >= 60 ? '#F5620F' : '#EF4444' });
-            if (currentLesson === 2 && r.posDistMM > 0) {
-              tip = `Target was 600mm from the corner. You were ${r.posDistMM}mm from target. Use the cursor coordinates to guide placement.`;
-            } else if (r.score >= 95) {
-              tip = 'Excellent window placement. Wall-hosted families automatically align to the host wall.';
+        if (currentLesson <= 4) {
+          const target = CH2_TARGETS[currentLesson];
+          const lastWin = placedElements.filter(el => el.userData?.type === 'window').slice(-1)[0];
+          if (lastWin) {
+            const r = scoreWindowPlacement(lastWin.userData.position, target);
+            score = r.score;
+            if (!r.onCorrectWall) {
+              score = 0;
+              details.push({ label: 'Wall selection', value: '0%', sub: 'Wrong wall — use the green guide lines', color: '#EF4444' });
+              tip = 'Look for the wall with green guide lines and place your window there.';
             } else {
-              tip = 'Windows snap to walls like doors. Check cursor coordinates before clicking.';
+              details.push({ label: 'Wall selection', value: '100%', sub: 'Correct wall ✓', color: '#34D399' });
+              details.push({ label: 'Position accuracy', value: `${r.score}%`, sub: `${r.posDistMM} mm from target`, color: r.score >= PASS_THRESHOLD ? '#34D399' : r.score >= 60 ? '#F5620F' : '#EF4444' });
+              if (currentLesson === 2) {
+                const actualOffsetMM = Math.round(lastWin.userData.position.z * 1000);
+                tip = `Target was 600 mm from the corner. You placed it ${actualOffsetMM} mm from the corner — ${r.posDistMM} mm from the target.`;
+              } else if (currentLesson === 3) {
+                const actualOffsetMM = Math.round(lastWin.userData.position.x * 1000);
+                tip = `Target was 900 mm from the left corner. You placed it ${actualOffsetMM} mm from the corner — ${r.posDistMM} mm from the target.`;
+              } else if (r.score >= 95) {
+                tip = 'Excellent window placement. Wall-hosted families align automatically.';
+              } else {
+                tip = 'Use the cursor position in the sidebar to guide exact placement.';
+              }
             }
           }
+        } else if (currentLesson === 5) {
+          const target = CH2_TARGETS[5];
+          const assign = optimalWallMatch(ch2L5Walls, target.walls);
+          let wt = 0;
+          if (assign) {
+            for (let i = 0; i < ch2L5Walls.length; i++) {
+              const ti = assign[i];
+              const r = scoreWall(ch2L5Walls[i], target.walls[ti]);
+              wt += r.total;
+              details.push({ label: `Wall ${i+1}`, value: `${r.total}%`, sub: `${r.actualLenMM} mm`, color: r.total>=PASS_THRESHOLD?'#34D399':r.total>=60?'#F5620F':'#EF4444' });
+            }
+          }
+          const wa = ch2L5Walls.length > 0 ? Math.round(wt / 4) : 0;
+          const de = ch2L5Elements.find(el => el.userData?.type === 'door'); let ds = 0;
+          if (de) {
+            const dr = scoreDoor(de.userData.position, target.wallSegments);
+            ds = dr.score;
+            details.push({ label: 'Door', value: `${dr.score}%`, sub: `${dr.distMM} mm from wall`, color: dr.score>=PASS_THRESHOLD?'#34D399':dr.score>=60?'#F5620F':'#EF4444' });
+          } else details.push({ label: 'Door', value: 'Missing', color: '#EF4444' });
+          const re = ch2L5Elements.find(el => el.userData?.type === 'roof'); let rs = 0;
+          if (re) {
+            const rr = scoreRoof(re.userData.points, target);
+            rs = rr.total;
+            details.push({ label: 'Roof', value: `${rr.total}%`, sub: `${rr.actualArea} m²`, color: rs>=PASS_THRESHOLD?'#34D399':rs>=60?'#F5620F':'#EF4444' });
+          } else details.push({ label: 'Roof', value: 'Missing', color: '#EF4444' });
+          let w1s = 0, w2s = 0;
+          if (ch2L5Windows.length >= 1) {
+            const r1 = scoreWindowPlacement(ch2L5Windows[0].userData.position, target.windows[0]);
+            w1s = r1.onCorrectWall ? r1.score : 0;
+            details.push({ label: 'Window 1 (bottom, centred)', value: `${w1s}%`, sub: r1.onCorrectWall ? `${r1.posDistMM} mm from centre` : 'Wrong wall', color: w1s>=PASS_THRESHOLD?'#34D399':w1s>=60?'#F5620F':'#EF4444' });
+          } else details.push({ label: 'Window 1', value: 'Missing', color: '#EF4444' });
+          if (ch2L5Windows.length >= 2) {
+            const r2 = scoreWindowPlacement(ch2L5Windows[1].userData.position, target.windows[1]);
+            w2s = r2.onCorrectWall ? r2.score : 0;
+            details.push({ label: 'Window 2 (right, 600 mm)', value: `${w2s}%`, sub: r2.onCorrectWall ? `${r2.posDistMM} mm from target` : 'Wrong wall', color: w2s>=PASS_THRESHOLD?'#34D399':w2s>=60?'#F5620F':'#EF4444' });
+          } else details.push({ label: 'Window 2', value: 'Missing', color: '#EF4444' });
+          score = Math.round(wa*0.30 + ds*0.10 + rs*0.20 + w1s*0.20 + w2s*0.20);
+          tip = score >= PASS_THRESHOLD ? 'You passed! You can place windows accurately from scratch.' : 'Focus on exact coordinates — use the cursor position display to hit your targets.';
         }
       }
 
       cState().scores[currentLesson - 1] = score;
       cState().completed[currentLesson - 1] = true;
+      saveProgress();
       showResults(score, details, tip);
       updateProgress();
       renderTabs();
@@ -1153,7 +1424,7 @@
     // ── Results Panel ─────────────────────────────────────────────
     function showResults(score, details, tip) {
       const ch = CHAPTERS[currentChapter];
-      const isChallenge = currentChapter === 1 && currentLesson === 5;
+      const isChallenge = (currentChapter === 1 && currentLesson === 5) || (currentChapter === 2 && currentLesson === 5);
       const xp = isChallenge ? score * 10 : 0;
 
       let title = 'Lesson Complete!';
@@ -1161,7 +1432,8 @@
         const t = { 1:'Wall Placed!', 2:'Second Wall!', 3:'Room Enclosed!', 4:'Door & Roof!', 5:'Final Challenge' };
         title = t[currentLesson] || title;
       } else if (currentChapter === 2) {
-        title = currentLesson === 1 ? 'Window Placed!' : 'Window Positioned!';
+        const t = { 1:'Window Placed!', 2:'Window at Offset!', 3:'Precise Placement!', 4:'Floor Plan Matched!', 5:'Assessment Complete' };
+        title = t[currentLesson] || title;
       }
 
       document.getElementById('result-title').textContent = title;
@@ -1219,10 +1491,10 @@
       hideResults();
       const ch = CHAPTERS[currentChapter], st = cState();
       const overall = Math.round(st.scores.reduce((a,b)=>a+b,0) / ch.totalLessons);
-      const totalXP = currentChapter === 1 ? st.scores[4] * 10 : overall * 5;
+      const totalXP = currentChapter === 1 ? st.scores[4] * 10 : currentChapter === 2 ? st.scores[4] * 10 : overall * 5;
 
       document.getElementById('ch-complete-title').textContent = `${ch.title.split('—')[0].trim()} Complete!`;
-      document.getElementById('ch-complete-subtitle').textContent = currentChapter === 1 ? 'You built your first room' : 'You added windows to your room';
+      document.getElementById('ch-complete-subtitle').textContent = currentChapter === 1 ? 'You built your first room' : 'You can place windows accurately';
 
       const se = document.getElementById('ch-overall-score');
       se.textContent = overall; se.style.color = overall>=90?'#34D399':overall>=70?'#F5620F':'#EF4444';
@@ -1321,8 +1593,11 @@
       if (num > 1 && !st.completed[num - 2]) return;
       hideResults(); currentLesson = num;
       wallStartPoint = null;
+      lessonLocked = false;
+      l1l2Walls = [];
       if (wallPreviewMesh) { scene.remove(wallPreviewMesh); wallPreviewMesh = null; }
       clearGhostPreview();
+      deselectElement();
       document.getElementById('prop-length').style.display = 'none';
       document.getElementById('prop-l3-count').style.display = 'none';
       document.getElementById('prop-l4-phase').style.display = 'none';
@@ -1349,8 +1624,45 @@
       // Clear any wall guide highlights from previous lessons
       clearWallGuides();
 
-      // Show wall guides for Ch2 lessons (highlight target walls)
-      if (currentChapter === 2) showWallGuide(num);
+      if (currentChapter === 2) {
+        removeWallLabels();
+        removeTargetMarker();
+        if (num <= 4) {
+          // Rebuild the pre-built room if missing (e.g. returning from L5 assessment)
+          const walls = placedElements.filter(el => el.userData?.type === 'wall');
+          if (walls.length !== 4) buildCh2PrebuiltRoom();
+          else {
+            // Remove any windows placed in a previous lesson
+            const wins = placedElements.filter(el => el.userData?.type === 'window');
+            wins.forEach(w => { scene.remove(w); placedElements.splice(placedElements.indexOf(w), 1); });
+            if (wins.length) updateElementsList();
+          }
+          // Wall name labels — highlight the target wall in green
+          const targetNames = { 1:'Bottom Wall', 2:'Right Wall', 3:'Top Wall', 4:'Left Wall' };
+          createWallLabels(targetNames[num]);
+          // Green crosshair at the exact target spot
+          showCh2TargetForLesson(num);
+        }
+        if (num === 4) {
+          setView('top');
+          document.getElementById('reference-section').style.display = '';
+          document.getElementById('reference-svg').innerHTML = buildCh2L4SVG();
+        } else {
+          setView('3d');
+        }
+        if (num === 5) {
+          // Assessment — clear room, user builds from scratch
+          [...placedElements].forEach(el => scene.remove(el)); placedElements = [];
+          ch2L5Phase = 'walls'; ch2L5WallsPlaced = 0; ch2L5Walls = []; ch2L5Elements = []; ch2L5Windows = [];
+          roofSketchPoints = []; roofSketchLines.forEach(o => scene.remove(o)); roofSketchLines = []; clearRoofGuides();
+          document.getElementById('prop-l5-progress').style.display = '';
+          document.getElementById('l5-progress-label').textContent = 'Walls: 0/4';
+          // Show wall labels (all grey — no target yet during build phase)
+          createWallLabels(null);
+        }
+        // Show wall guides for lessons 1–4
+        if (num <= 4) showWallGuide(num);
+      }
 
       // Auto-switch to top view for wall drawing lessons (Revit plan view)
       const isWallDrawing = currentChapter === 1 && (num <= 3 || (num === 5));
@@ -1374,8 +1686,63 @@
       document.getElementById('progress-bar').style.width = `${(done / tl) * 100}%`;
     }
 
+    // ── Chapter 2 Helpers ─────────────────────────────────────────
+    function buildCh2PrebuiltRoom() {
+      [...placedElements].forEach(el => scene.remove(el)); placedElements = [];
+      [[0,0,3,0],[0,0,0,3],[3,0,3,3],[0,3,3,3]].forEach(([sx,sz,ex,ez]) => {
+        const w = createWallMesh(new THREE.Vector3(sx,0,sz), new THREE.Vector3(ex,0,ez));
+        scene.add(w); placedElements.push(w);
+      });
+      const door = createDoorMesh(new THREE.Vector3(1.5,0,0), 0);
+      scene.add(door); placedElements.push(door);
+      const roof = createRoofMesh([new THREE.Vector3(0,0,0), new THREE.Vector3(3,0,0), new THREE.Vector3(3,0,3), new THREE.Vector3(0,0,3)]);
+      scene.add(roof); placedElements.push(roof);
+      updateElementsList();
+    }
+
+    function buildCh2L4SVG() {
+      // Room maps to svgX: 40..176, svgY: 22..158  (z=0 at bottom y=158, z=3 at top y=22)
+      return `
+        <rect width="200" height="200" fill="#0B0D11"/>
+        <text x="112" y="11" text-anchor="middle" fill="#A0A4B8" font-size="6.5" font-family="sans-serif">Floor Plan (top view)</text>
+        <!-- Room interior -->
+        <rect x="46" y="26" width="130" height="132" fill="#0E1118"/>
+        <!-- Bottom wall (greyed out — not your target) -->
+        <rect x="40" y="152" width="136" height="6" rx="1" fill="#3A3E50"/>
+        <!-- Top wall (grey) -->
+        <rect x="40" y="22"  width="136" height="6" rx="1" fill="#3A3E50"/>
+        <!-- Right wall (grey) -->
+        <rect x="170" y="22" width="6" height="136" rx="1" fill="#3A3E50"/>
+        <!-- LEFT WALL — TARGET — green, split around window gap -->
+        <rect x="40" y="22"  width="6" height="54" rx="1" fill="#34D399"/>
+        <rect x="40" y="106" width="6" height="52" rx="1" fill="#34D399"/>
+        <!-- Window opening gap -->
+        <rect x="36" y="76" width="14" height="30" fill="#0B0D11"/>
+        <!-- Window symbol -->
+        <rect x="35" y="75" width="16" height="32" fill="none" stroke="#34D399" stroke-width="1.8" rx="1"/>
+        <line x1="35" y1="91" x2="51" y2="91" stroke="#34D399" stroke-width="1.2"/>
+        <circle cx="43" cy="91" r="3.5" fill="none" stroke="#34D399" stroke-width="1.2"/>
+        <!-- Callout box -->
+        <line x1="52" y1="91" x2="68" y2="91" stroke="#34D399" stroke-width="0.9"/>
+        <rect x="69" y="79" width="98" height="26" rx="3" fill="rgba(52,211,153,0.12)" stroke="#34D399" stroke-width="1"/>
+        <text x="118" y="89" text-anchor="middle" fill="#34D399" font-size="7.5" font-family="sans-serif" font-weight="700">PLACE WINDOW HERE</text>
+        <text x="118" y="100" text-anchor="middle" fill="#34D399" font-size="6" font-family="sans-serif">Left Wall · 1500 mm from corner</text>
+        <!-- Door — faded, labelled "existing" -->
+        <rect x="101" y="152" width="22" height="6" rx="1" fill="#4A3F2A" opacity="0.6"/>
+        <text x="112" y="170" text-anchor="middle" fill="#4A4030" font-size="6" font-family="sans-serif">door (existing — ignore)</text>
+        <!-- Wall name labels -->
+        <text x="112" y="18"  text-anchor="middle" fill="#4A4E60" font-size="6.5" font-family="sans-serif">Top Wall</text>
+        <text x="186" y="90" text-anchor="middle" fill="#4A4E60" font-size="6.5" font-family="sans-serif" transform="rotate(90,186,90)">Right Wall</text>
+        <text x="30"  y="90" text-anchor="middle" fill="#34D399" font-size="6.5" font-family="sans-serif" font-weight="700" transform="rotate(-90,30,90)">◀ Left Wall</text>
+        <!-- Dimension -->
+        <line x1="38" y1="158" x2="38" y2="91" stroke="#34D399" stroke-width="0.7" stroke-dasharray="2,2" opacity="0.6"/>
+        <text x="33" y="128" fill="#34D399" font-size="5.5" font-family="sans-serif" text-anchor="middle" transform="rotate(-90,33,128)" opacity="0.8">1500 mm</text>
+      `;
+    }
+
     // ── Chapter Start ─────────────────────────────────────────────
     function startChapter(num) {
+      removeWallLabels(); removeTargetMarker();
       currentChapter = num;
       document.getElementById('landing-page').style.display = 'none';
       document.getElementById('app-shell').classList.remove('hidden');
@@ -1383,27 +1750,14 @@
       document.getElementById('chapter-title').textContent = CHAPTERS[num].title;
       resize();
 
-      if (num === 2) {
-        // Pre-build the Chapter 1 room
-        [...placedElements].forEach(el => scene.remove(el)); placedElements = [];
-        const roomWalls = [[0,0,3,0],[0,0,0,3],[3,0,3,3],[0,3,3,3]];
-        roomWalls.forEach(([sx,sz,ex,ez]) => {
-          const w = createWallMesh(new THREE.Vector3(sx,0,sz), new THREE.Vector3(ex,0,ez));
-          scene.add(w); placedElements.push(w);
-        });
-        const doorPos = new THREE.Vector3(1.5, 0, 0);
-        const door = createDoorMesh(doorPos, 0);
-        scene.add(door); placedElements.push(door);
-        const roofPts = [new THREE.Vector3(0,0,0), new THREE.Vector3(3,0,0), new THREE.Vector3(3,0,3), new THREE.Vector3(0,0,3)];
-        const roof = createRoofMesh(roofPts);
-        scene.add(roof); placedElements.push(roof);
-      }
+      if (num === 2) buildCh2PrebuiltRoom();
 
       switchLesson(1);
       updateProgress();
     }
 
     function goToLanding() {
+      removeWallLabels(); removeTargetMarker();
       document.getElementById('app-shell').classList.add('hidden');
       document.getElementById('app-shell').classList.remove('flex');
       document.getElementById('landing-page').style.display = '';
@@ -1412,12 +1766,15 @@
 
     function updateLandingPage() {
       const ch1Done = chapterState[1].completed.every(Boolean);
+      const ch2Done = chapterState[2].completed.every(Boolean);
       if (ch1Done) {
         document.getElementById('ch1-status').innerHTML = '<span style="color: #34D399;"><i class="fa-solid fa-check mr-1"></i> Complete</span>';
         document.getElementById('ch2-card').style.opacity = '1';
         document.getElementById('ch2-card').style.cursor = 'pointer';
         document.getElementById('ch2-card').onclick = () => startChapter(2);
-        document.getElementById('ch2-status').innerHTML = '<span style="color: #F5620F;">Start <i class="fa-solid fa-arrow-right"></i></span>';
+        document.getElementById('ch2-status').innerHTML = ch2Done
+          ? '<span style="color: #34D399;"><i class="fa-solid fa-check mr-1"></i> Complete</span>'
+          : '<span style="color: #F5620F;">Start <i class="fa-solid fa-arrow-right"></i></span>';
       }
     }
 
@@ -1438,6 +1795,11 @@
       wallStartPoint = null;
       if (wallPreviewMesh) { scene.remove(wallPreviewMesh); wallPreviewMesh = null; }
       document.getElementById('prop-length').style.display = 'none'; hideMeasureBar();
+      lessonLocked = false;
+      if (currentChapter === 1 && (currentLesson === 1 || currentLesson === 2)) {
+        l1l2Walls.forEach(w => { scene.remove(w); const i=placedElements.indexOf(w); if(i>=0) placedElements.splice(i,1); });
+        l1l2Walls=[]; updateElementsList();
+      }
       if (currentChapter === 1 && currentLesson === 3) {
         l3Walls.forEach(w => { scene.remove(w); const i=placedElements.indexOf(w); if(i>=0) placedElements.splice(i,1); });
         l3Walls=[]; l3WallsPlaced=0; document.getElementById('l3-wall-count').textContent = `0/${L3_REQUIRED_WALLS}`; updateElementsList();
@@ -1453,10 +1815,16 @@
         roofSketchPoints=[]; roofSketchLines.forEach(o=>scene.remove(o)); roofSketchLines=[]; clearRoofGuides();
         document.getElementById('l5-progress-label').textContent=`Walls: 0/${L5_REQUIRED_WALLS}`; updateElementsList();
       }
-      if (currentChapter === 2) {
+      if (currentChapter === 2 && currentLesson <= 4) {
         // Remove last placed window
         const wins = placedElements.filter(el => el.userData?.type === 'window');
         if (wins.length) { const last = wins[wins.length-1]; scene.remove(last); placedElements.splice(placedElements.indexOf(last), 1); updateElementsList(); }
+      }
+      if (currentChapter === 2 && currentLesson === 5) {
+        ch2L5Elements.forEach(el => { scene.remove(el); const i = placedElements.indexOf(el); if (i>=0) placedElements.splice(i,1); });
+        ch2L5Phase = 'walls'; ch2L5WallsPlaced = 0; ch2L5Walls = []; ch2L5Elements = []; ch2L5Windows = [];
+        roofSketchPoints = []; roofSketchLines.forEach(o => scene.remove(o)); roofSketchLines = []; clearRoofGuides();
+        document.getElementById('l5-progress-label').textContent = 'Walls: 0/4'; updateElementsList();
       }
       updateInstruction(CHAPTERS[currentChapter].instructions[currentLesson]);
       setStatus('Ready');
@@ -1474,9 +1842,291 @@
     function setStatus(t) { document.getElementById('status-mode').textContent = t; }
 
     // ── Init ──────────────────────────────────────────────────────
-    document.getElementById('btn-start')?.remove();
     sphericalFromCamera();
-    function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
+
+    // Restore saved progress silently
+    if (loadProgress()) {
+      updateLandingPage();
+    }
+    // ── Ch2 Wall Labels (CSS overlay projected to screen) ────────────
+    const CH2_WALL_LABEL_DEFS = [
+      { name: 'Bottom Wall', pos: new THREE.Vector3(1.5, WALL_HEIGHT * 0.5, 0),   color: '#A0A4B8' },
+      { name: 'Left Wall',   pos: new THREE.Vector3(0,   WALL_HEIGHT * 0.5, 1.5), color: '#A0A4B8' },
+      { name: 'Right Wall',  pos: new THREE.Vector3(3,   WALL_HEIGHT * 0.5, 1.5), color: '#A0A4B8' },
+      { name: 'Top Wall',    pos: new THREE.Vector3(1.5, WALL_HEIGHT * 0.5, 3),   color: '#A0A4B8' },
+    ];
+    let wallLabelEls = [];
+
+    function createWallLabels(targetWallName) {
+      removeWallLabels();
+      const container = canvas.parentElement;
+      for (const def of CH2_WALL_LABEL_DEFS) {
+        const isTarget = def.name === targetWallName;
+        const div = document.createElement('div');
+        div.style.cssText = `position:absolute;pointer-events:none;font-size:10px;font-weight:600;
+          font-family:'Space Grotesk',sans-serif;border-radius:4px;padding:2px 7px;white-space:nowrap;
+          transition:opacity 0.2s;
+          color:${isTarget ? '#34D399' : '#A0A4B8'};
+          background:rgba(11,13,17,0.85);
+          border:1px solid ${isTarget ? 'rgba(52,211,153,0.5)' : 'rgba(160,164,184,0.2)'};`;
+        div.textContent = def.name;
+        div._worldPos = def.pos;
+        container.appendChild(div);
+        wallLabelEls.push(div);
+      }
+    }
+
+    function removeWallLabels() {
+      wallLabelEls.forEach(el => el.remove());
+      wallLabelEls = [];
+    }
+
+    function updateWallLabelTarget(targetWallName) {
+      for (const el of wallLabelEls) {
+        const isTarget = el.textContent === targetWallName;
+        el.style.color = isTarget ? '#34D399' : '#A0A4B8';
+        el.style.border = `1px solid ${isTarget ? 'rgba(52,211,153,0.5)' : 'rgba(160,164,184,0.15)'}`;
+      }
+    }
+
+    function updateWallLabelPositions() {
+      if (!wallLabelEls.length) return;
+      const rect = canvas.getBoundingClientRect();
+      for (const el of wallLabelEls) {
+        const v = el._worldPos.clone().project(camera);
+        if (v.z > 1) { el.style.display = 'none'; continue; }
+        el.style.display = '';
+        el.style.left = ((v.x * 0.5 + 0.5) * rect.width - el.offsetWidth / 2) + 'px';
+        el.style.top  = ((-v.y * 0.5 + 0.5) * rect.height - el.offsetHeight / 2) + 'px';
+      }
+    }
+
+    // ── Ch2 Target Position Marker ────────────────────────────────
+    let targetMarkerGroup = null;
+
+    function showTargetMarker(worldPos, wallAngle) {
+      removeTargetMarker();
+      const g = new THREE.Group();
+      const cy = SILL_HEIGHT + WINDOW_HEIGHT / 2;
+      const mat = new THREE.LineBasicMaterial({ color: 0x34D399 });
+      // Crosshair lines in local wall space
+      const hLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-0.2, cy, 0), new THREE.Vector3(0.2, cy, 0)]), mat);
+      const vLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, SILL_HEIGHT - 0.05, 0), new THREE.Vector3(0, SILL_HEIGHT + WINDOW_HEIGHT + 0.05, 0)]), mat);
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.10, 0.16, 24),
+        new THREE.MeshBasicMaterial({ color: 0x34D399, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+      );
+      ring.position.set(0, cy, WALL_THICKNESS / 2 + 0.01);
+      // Window outline (dashed feel — just corners)
+      const hw = WINDOW_WIDTH / 2, hh = WINDOW_HEIGHT / 2;
+      const corners = [
+        new THREE.Vector3(-hw, cy - hh, WALL_THICKNESS/2+0.012), new THREE.Vector3(-hw + 0.15, cy - hh, WALL_THICKNESS/2+0.012),
+        new THREE.Vector3(-hw, cy - hh, WALL_THICKNESS/2+0.012), new THREE.Vector3(-hw, cy - hh + 0.15, WALL_THICKNESS/2+0.012),
+        new THREE.Vector3( hw, cy - hh, WALL_THICKNESS/2+0.012), new THREE.Vector3( hw - 0.15, cy - hh, WALL_THICKNESS/2+0.012),
+        new THREE.Vector3( hw, cy - hh, WALL_THICKNESS/2+0.012), new THREE.Vector3( hw, cy - hh + 0.15, WALL_THICKNESS/2+0.012),
+        new THREE.Vector3(-hw, cy + hh, WALL_THICKNESS/2+0.012), new THREE.Vector3(-hw + 0.15, cy + hh, WALL_THICKNESS/2+0.012),
+        new THREE.Vector3(-hw, cy + hh, WALL_THICKNESS/2+0.012), new THREE.Vector3(-hw, cy + hh - 0.15, WALL_THICKNESS/2+0.012),
+        new THREE.Vector3( hw, cy + hh, WALL_THICKNESS/2+0.012), new THREE.Vector3( hw - 0.15, cy + hh, WALL_THICKNESS/2+0.012),
+        new THREE.Vector3( hw, cy + hh, WALL_THICKNESS/2+0.012), new THREE.Vector3( hw, cy + hh - 0.15, WALL_THICKNESS/2+0.012),
+      ];
+      g.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(corners), new THREE.LineBasicMaterial({ color: 0x34D399, transparent: true, opacity: 0.5 })));
+      g.add(hLine); g.add(vLine); g.add(ring);
+      g.position.copy(worldPos);
+      g.rotation.y = -wallAngle;
+      scene.add(g);
+      targetMarkerGroup = g;
+    }
+
+    function removeTargetMarker() {
+      if (targetMarkerGroup) { scene.remove(targetMarkerGroup); targetMarkerGroup = null; }
+    }
+
+    function showCh2TargetForLesson(lessonNum) {
+      removeTargetMarker();
+      const target = CH2_TARGETS[lessonNum];
+      if (!target || !target.wall) return;
+      const pos = new THREE.Vector3(target.targetPos[0], 0, target.targetPos[1]);
+      const dx = target.wall.b[0] - target.wall.a[0];
+      const dz = target.wall.b[1] - target.wall.a[1];
+      showTargetMarker(pos, Math.atan2(dz, dx));
+    }
+
+    // ── Selection & Deletion (Ch3+ only) ─────────────────────────
+    function showResizeHandles(wall) {
+      clearResizeHandles();
+      [wall.userData.start, wall.userData.end].forEach((ep, i) => {
+        const h = new THREE.Mesh(
+          new THREE.SphereGeometry(0.1, 8, 8),
+          new THREE.MeshBasicMaterial({ color: 0xF5620F, depthTest: false })
+        );
+        h.position.set(ep.x, WALL_HEIGHT + 0.12, ep.z);
+        h.userData = { isResizeHandle: true, handleIdx: i };
+        h.renderOrder = 999;
+        scene.add(h);
+        resizeHandleMeshes.push(h);
+      });
+    }
+
+    function clearResizeHandles() {
+      resizeHandleMeshes.forEach(h => scene.remove(h));
+      resizeHandleMeshes = [];
+    }
+
+    function selectElement(el) {
+      deselectElement();
+      selectedElement = el;
+      selectionHelper = new THREE.BoxHelper(el, 0xF5620F);
+      scene.add(selectionHelper);
+      if (el.userData?.type === 'wall') showResizeHandles(el);
+      updateSelectionPanel();
+    }
+
+    function deselectElement() {
+      if (selectionHelper) { scene.remove(selectionHelper); selectionHelper = null; }
+      selectedElement = null;
+      clearResizeHandles();
+      updateSelectionPanel();
+    }
+
+    function updateSelectionPanel() {
+      const panel = document.getElementById('selection-panel');
+      const props = document.getElementById('selection-props');
+      if (!selectedElement) { panel.style.display = 'none'; return; }
+      panel.style.display = '';
+      const t = selectedElement.userData?.type || 'element';
+      let rows = `<div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs"><span class="text-dark-text">Type</span><span class="text-dark-heading font-medium capitalize">${t}</span></div>`;
+      if (t === 'wall') {
+        const s = selectedElement.userData.start, e = selectedElement.userData.end;
+        rows += `<div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs"><span class="text-dark-text">Length</span><span class="text-dark-heading font-medium">${selectedElement.userData.lengthMM} mm</span></div>`;
+        rows += `<div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs"><span class="text-dark-text">Start</span><span class="text-dark-heading font-medium">(${Math.round(s.x*1000)}, ${Math.round(s.z*1000)})</span></div>`;
+        rows += `<div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs"><span class="text-dark-text">End</span><span class="text-dark-heading font-medium">(${Math.round(e.x*1000)}, ${Math.round(e.z*1000)})</span></div>`;
+      } else {
+        const p = selectedElement.userData?.position || selectedElement.position;
+        if (p) rows += `<div class="property-row flex items-center justify-between py-1.5 px-2 rounded text-xs"><span class="text-dark-text">Position</span><span class="text-dark-heading font-medium">(${Math.round(p.x*1000)}, ${Math.round(p.z*1000)})</span></div>`;
+      }
+      props.innerHTML = rows;
+    }
+
+    function deleteSelectedElement() {
+      if (!selectedElement) return;
+      scene.remove(selectedElement);
+      const idx = placedElements.indexOf(selectedElement);
+      if (idx >= 0) placedElements.splice(idx, 1);
+      deselectElement();
+      updateElementsList();
+    }
+
+    function rebuildWallGeometry(wall, newStart, newEnd) {
+      const dx = newEnd.x - newStart.x, dz = newEnd.z - newStart.z;
+      const length = Math.sqrt(dx * dx + dz * dz);
+      if (length < 0.05) return;
+      wall.geometry.dispose();
+      wall.geometry = new THREE.BoxGeometry(length + WALL_JOIN_EXTEND, WALL_HEIGHT, WALL_THICKNESS);
+      wall.position.set((newStart.x + newEnd.x) / 2, WALL_HEIGHT / 2, (newStart.z + newEnd.z) / 2);
+      wall.rotation.y = -Math.atan2(dz, dx);
+      wall.userData.start = newStart.clone();
+      wall.userData.end = newEnd.clone();
+      wall.userData.lengthMM = Math.round(length * 1000);
+    }
+
+    function initElementDrag(e) {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+
+      // Resize handles take priority
+      if (resizeHandleMeshes.length > 0) {
+        const hHits = raycaster.intersectObjects(resizeHandleMeshes);
+        if (hHits.length > 0) {
+          dragResizeWall = selectedElement;
+          dragResizeHandleIdx = hHits[0].object.userData.handleIdx;
+          isDraggingElement = true;
+          dragPrevGroundPt = getGroundPoint(e);
+          return;
+        }
+      }
+
+      // Move: must click on the already-selected element
+      if (selectedElement) {
+        const hits = raycaster.intersectObjects([selectedElement, ...selectedElement.children || []], true);
+        if (hits.length > 0) {
+          dragMoveTarget = selectedElement;
+          isDraggingElement = true;
+          dragPrevGroundPt = getGroundPoint(e);
+        }
+      }
+    }
+
+    function handleElementDrag(e) {
+      const groundPt = getGroundPoint(e);
+      if (!groundPt) return;
+      dragDidMove = true;
+
+      if (dragResizeWall) {
+        const wall = dragResizeWall;
+        const fixed = dragResizeHandleIdx === 0 ? wall.userData.end.clone() : wall.userData.start.clone();
+        const moved = groundPt;
+        const newStart = dragResizeHandleIdx === 0 ? moved : fixed;
+        const newEnd   = dragResizeHandleIdx === 0 ? fixed : moved;
+        rebuildWallGeometry(wall, newStart, newEnd);
+        showResizeHandles(wall);
+        if (selectionHelper) selectionHelper.update();
+        return;
+      }
+
+      if (dragMoveTarget && dragPrevGroundPt) {
+        const dx = groundPt.x - dragPrevGroundPt.x;
+        const dz = groundPt.z - dragPrevGroundPt.z;
+        if (dx === 0 && dz === 0) return;
+        dragPrevGroundPt = groundPt;
+
+        const type = dragMoveTarget.userData.type;
+        if (type === 'wall') {
+          dragMoveTarget.userData.start.x += dx;
+          dragMoveTarget.userData.start.z += dz;
+          dragMoveTarget.userData.end.x += dx;
+          dragMoveTarget.userData.end.z += dz;
+          dragMoveTarget.position.x += dx;
+          dragMoveTarget.position.z += dz;
+          showResizeHandles(dragMoveTarget);
+          if (selectionHelper) selectionHelper.update();
+        } else if (type === 'door' || type === 'window') {
+          const hostWall = dragMoveTarget.userData.hostWall;
+          if (!hostWall) return;
+          const ws = hostWall.userData.start, we = hostWall.userData.end;
+          const wdx = we.x - ws.x, wdz = we.z - ws.z, lenSq = wdx * wdx + wdz * wdz;
+          if (lenSq < 0.001) return;
+          const curPos = dragMoveTarget.position;
+          const newX = curPos.x + dx, newZ = curPos.z + dz;
+          let t = ((newX - ws.x) * wdx + (newZ - ws.z) * wdz) / lenSq;
+          t = Math.max(0.1, Math.min(0.9, t));
+          dragMoveTarget.position.set(ws.x + t * wdx, dragMoveTarget.position.y, ws.z + t * wdz);
+          dragMoveTarget.userData.position = dragMoveTarget.position.clone();
+          if (selectionHelper) selectionHelper.update();
+        }
+      }
+    }
+
+    function handleSelectionClick(e) {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const hits = raycaster.intersectObjects(placedElements, true);
+      if (hits.length > 0) {
+        let hit = hits[0].object;
+        while (hit.parent && !placedElements.includes(hit)) hit = hit.parent;
+        if (placedElements.includes(hit)) { selectElement(hit); return; }
+      }
+      deselectElement();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Delete' && selectedElement && currentChapter >= 3) deleteSelectedElement();
+    });
+
+    function animate() { requestAnimationFrame(animate); if (selectionHelper) selectionHelper.update(); renderer.render(scene, camera); updateWallLabelPositions(); }
     animate();
   </script>
 </body>
